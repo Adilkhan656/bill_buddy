@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197707613090",
+    "project_id": "bill-buddy-c5f3d",
+    "storage_bucket": "bill-buddy-c5f3d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197707613090:android:8aa4f0f755b180955ca8fb",
+        "android_client_info": {
+          "package_name": "com.example.bill_buddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCBxQON7A8FPpbLZiWT5I1T55ARa5chio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

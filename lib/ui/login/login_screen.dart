@@ -1,7 +1,7 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/ui/login/register_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // To access Auth Service if needed
+// To access Auth Service if needed
 
 
 class LoginScreen extends StatefulWidget {

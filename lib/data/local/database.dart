@@ -6,14 +6,18 @@ import 'package:path/path.dart' as p;
 
 part 'database.g.dart';
 
-// --- TABLE 1: EXPENSES (Header) ---
+// ==========================================
+// 1. TABLE DEFINITIONS
+// ==========================================
+
+// --- TABLE 1: EXPENSES (The Bill Header) ---
 class Expenses extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get userId => text()();
+  TextColumn get userId => text()(); // To link to Firebase User
   
   // Financial Details
   RealColumn get amount => real()();
-  RealColumn get tax => real().withDefault(const Constant(0.0))(); // Tax amount
+  RealColumn get tax => real().withDefault(const Constant(0.0))();
   
   // Meta Details
   TextColumn get merchant => text()();
@@ -21,17 +25,18 @@ class Expenses extends Table {
   DateTimeColumn get date => dateTime()();
 }
 
-// --- TABLE 2: BILL ITEMS (Individual Items in a bill) ---
-class BillItems extends Table {
+// --- TABLE 2: EXPENSE ITEMS (Individual items inside a bill) ---
+// I renamed 'BillItems' to 'ExpenseItems' to match the table above
+class ExpenseItems extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get expenseId => integer().references(Expenses, #id)(); // Link to parent bill
+  IntColumn get expenseId => integer().references(Expenses, #id)(); // Link to parent
   TextColumn get name => text()();
   RealColumn get amount => real()();
 }
 
-// --- TABLE 3: USER PROFILE ---
+// --- TABLE 3: USER PROFILES ---
 class UserProfiles extends Table {
-  TextColumn get uid => text()(); // Firebase UID (Primary Key)
+  TextColumn get uid => text()(); // Firebase UID
   TextColumn get name => text()();
   TextColumn get email => text()();
   IntColumn get age => integer()();
@@ -40,51 +45,79 @@ class UserProfiles extends Table {
   Set<Column> get primaryKey => {uid};
 }
 
-// --- DATABASE CLASS ---
-@DriftDatabase(tables: [Expenses, UserProfiles, BillItems])
+// ==========================================
+// 2. DATABASE CLASS & MIGRATION
+// ==========================================
+
+@DriftDatabase(tables: [Expenses, ExpenseItems, UserProfiles])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  // ✅ Bumping version to 3 to trigger the migration logic below
   @override
-  int get schemaVersion => 3; // Version 3
+  int get schemaVersion => 3; 
+
+  // 👇 MIGRATION STRATEGY (The Fix for your Crash) 👇
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll(); // Create tables for new users
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        print("⚠️ Database version bumped from $from to $to. Wiping and recreating tables...");
+        
+        // This prevents the "Schema" crash.
+        // It deletes old tables and creates fresh ones.
+        for (final table in allTables) {
+          await m.deleteTable(table.actualTableName);
+        }
+        await m.createAll();
+      },
+    );
+  }
+
+  // ==========================================
+  // 3. QUERIES (The functions your App needs)
+  // ==========================================
 
   // --- EXPENSE QUERIES ---
   
-  // 1. Get all expenses (Stream for real-time UI)
+  // Get all expenses (Stream for real-time UI)
   Stream<List<Expense>> watchAllExpenses() => 
       (select(expenses)..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])).watch();
 
-  // 2. Insert a new expense (Returns the ID of the new row)
+  // Insert a new expense (Returns the ID of the new row)
   Future<int> insertExpense(ExpensesCompanion entry) => into(expenses).insert(entry);
   
-  // 3. Delete an expense
+  // Delete an expense
   Future<int> deleteExpense(int id) => (delete(expenses)..where((t) => t.id.equals(id))).go();
 
-  // 4. Insert multiple items at once (Batch)
-  Future<void> insertBillItems(List<BillItemsCompanion> items) async {
+  // Insert items in batch (Efficiently)
+  Future<void> insertExpenseItems(List<ExpenseItemsCompanion> items) async {
     await batch((batch) {
-      batch.insertAll(billItems, items);
+      batch.insertAll(expenseItems, items);
     });
   }
 
   // --- USER PROFILE QUERIES ---
   
-  // 5. Save or Update User Profile
   Future<int> saveUserProfile(UserProfilesCompanion entry) {
     return into(userProfiles).insertOnConflictUpdate(entry);
   }
   
-  // 6. Get User Profile
   Future<UserProfile?> getUserProfile(String uid) {
     return (select(userProfiles)..where((t) => t.uid.equals(uid))).getSingleOrNull();
   }
 }
 
-// --- CONNECTION HELPER ---
+// ==========================================
+// 4. CONNECTION HELPER
+// ==========================================
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+    final file = File(p.join(dbFolder.path, 'bill_buddy.sqlite'));
     return NativeDatabase(file);
   });
 }

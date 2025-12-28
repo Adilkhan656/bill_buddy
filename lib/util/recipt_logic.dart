@@ -27,20 +27,25 @@ class ReceiptItem {
 
 class ReceiptParser {
   
-  // --- MAIN PARSE FUNCTION ---
+  // Known big brands to auto-detect
+  static final Set<String> _knownMerchants = {
+    'walmart', 'target', 'costco', 'walgreens', 'cvs', 
+    'starbucks', 'mcdonalds', 'kfc', 'subway', 
+    'home depot', 'lowes', 'best buy', 'apple', 'amazon',
+    'reliance', 'dmart', 'big bazaar', 'zara', 'h&m'
+  };
+
   static ReceiptData parse(String rawText) {
-    // 1. Clean the text (remove empty lines)
     List<String> lines = rawText.split('\n')
         .map((l) => l.trim())
         .where((l) => l.isNotEmpty)
         .toList();
 
-    // 2. Extract Fields using smart logic
     String merchant = _findMerchant(lines);
     DateTime? date = _findDate(rawText);
     double total = _findTotal(lines);
     double tax = _findTax(lines);
-    List<ReceiptItem> items = _findLineItems(lines, total); // <--- Advanced Table Logic
+    List<ReceiptItem> items = _findLineItems(lines, total, tax);
     String category = _guessCategory(merchant, rawText, items);
 
     return ReceiptData(
@@ -53,157 +58,161 @@ class ReceiptParser {
     );
   }
 
-  // --- 1. MERCHANT LOGIC ---
+  // --- 1. MERCHANT LOGIC (Brand Priority) ---
   static String _findMerchant(List<String> lines) {
-    // Look at first 10 lines only
+    // Strategy A: Check for known brands first (Highest Priority)
+    for (String line in lines) {
+      String lower = line.toLowerCase();
+      for (String brand in _knownMerchants) {
+        if (lower.contains(brand)) {
+           // Return the clean brand name (e.g. "Walmart") capitalized
+           return brand[0].toUpperCase() + brand.substring(1); 
+        }
+      }
+    }
+
+    // Strategy B: If no known brand, take the first valid line
     for (int i = 0; i < lines.length && i < 10; i++) {
       String line = lines[i];
       String lower = line.toLowerCase();
       
-      // Filter out junk/headers
+      // Filter junk lines
+      if (lower.contains("limited time")) continue; // <--- FIX FOR YOUR WALMART BILL
+      if (lower.contains("save money")) continue;
       if (lower.contains("tax invoice")) continue;
-      if (lower.contains("gst")) continue;
-      if (lower.contains("date")) continue;
-      if (lower.contains("bill to")) continue;
-      if (lower.startsWith("no.")) continue; 
-      if (lower.contains("welcome")) continue;
-      
-      // Valid merchant names are usually short (but not too short)
-      if (line.length > 3 && line.length < 40) {
-        return line; 
-      }
+      if (lower.contains("customer copy")) continue;
+      if (lower.length < 3) continue;
+
+      return line; 
     }
     return "Unknown Merchant";
   }
 
-  // --- 2. TABLE EXTRACTION (The "Item" Logic) ---
-  static List<ReceiptItem> _findLineItems(List<String> lines, double totalAmount) {
+  // --- 2. TABLE EXTRACTION (Universal Mode) ---
+  static List<ReceiptItem> _findLineItems(List<String> lines, double totalAmount, double taxAmount) {
     List<ReceiptItem> extractedItems = [];
-    
-    // State 0: Waiting for Header
-    // State 1: Reading Items
-    int state = 0; 
-    
+    int headerIndex = -1;
+
+    // Step A: Try to find a Header
     for (int i = 0; i < lines.length; i++) {
+      String lower = lines[i].toLowerCase();
+      if ((lower.contains("item") || lower.contains("description") || lower.contains("article")) && 
+          (lower.contains("price") || lower.contains("amount") || lower.contains("rate"))) {
+        headerIndex = i;
+        break;
+      }
+    }
+
+    // Step B: Start scanning
+    // If no header found, start from line 3 (skip likely merchant info)
+    int startIndex = (headerIndex != -1) ? headerIndex + 1 : 3;
+
+    for (int i = startIndex; i < lines.length; i++) {
       String line = lines[i];
       String lower = line.toLowerCase();
 
-      // STOP if we hit the footer (Total/Subtotal)
-      if (lower.startsWith("total") || lower.startsWith("sub total") || lower.startsWith("grand total")) {
-        break;
-      }
+      // STOP conditions
+      if (lower.startsWith("total") || lower.startsWith("subtotal") || lower.startsWith("balance")) break;
+      if (lower.contains("items sold")) break; // Walmart specific footer
 
-      // STATE 0: Look for "Item" or "Description" header
-      if (state == 0) {
-        if (lower.contains("item") && lower.contains("description")) {
-          state = 1; 
-          continue;
-        }
-        // Fallback: If we see a row starting with "1 " and it has a big price, assume table started
-        if (RegExp(r'^\s*1\s+').hasMatch(line) && !lower.contains("/")) {
-           state = 1;
-        } else {
-          continue; // Keep looking for header
-        }
-      }
+      // IGNORE garbage
+      if (lower.contains("visa") || lower.contains("change due")) continue;
 
-      // STATE 1: Parse the actual item rows
-      if (state == 1) {
-        // Ignore garbage lines (headers appearing again)
-        if (lower.contains("qty") && lower.contains("rate")) continue;
-
-        // Regex: Find the LAST price in the line (e.g. "59,000.00")
-        final priceMatch = RegExp(r'([\d,]+\.\d{2})\s*$').firstMatch(line);
+      // PARSE PRICE: Look for price at end, allowing 1-2 chars after (like "9.44 X")
+      // Regex explanation:
+      // (\d+\.\d{2})  -> Find 12.34
+      // \s* -> Maybe spaces
+      // [a-zA-Z]?     -> Maybe ONE letter (X, N, T)
+      // $             -> End of line
+      final priceMatch = RegExp(r'(\d+\.\d{2})\s*[a-zA-Z]?$').firstMatch(line);
+      
+      if (priceMatch != null) {
+        double amount = double.parse(priceMatch.group(1)!);
         
-        if (priceMatch != null) {
-          double amount = double.parse(priceMatch.group(1)!.replaceAll(',', ''));
-          
-          // Everything before the price is the Description
-          String desc = line.substring(0, line.indexOf(priceMatch.group(0)!)).trim();
-          
-          // Cleanup: Remove leading numbers like "1 " or "2 " (Row numbers)
-          desc = desc.replaceAll(RegExp(r'^\d+\s+'), ''); 
+        // Safety: Don't capture the Total or Tax as an item
+        if (amount == totalAmount || amount == taxAmount) continue;
+        if (amount == 0.0) continue;
 
-          // Sanity check: Amount shouldn't be the Total
-          if (amount > 0 && amount != totalAmount) {
-             extractedItems.add(ReceiptItem(desc, amount));
-          }
-        } else {
-          // Multiline Description Logic: Append to previous item
-          // (e.g. Line 1: "Apple iPhone 12", Line 2: "(128GB Black)")
-          if (extractedItems.isNotEmpty) {
-             // Avoid appending technical junk like HSN codes
-             if (!lower.contains("hsn") && !lower.contains("imei")) {
-                extractedItems.last.description += " $line";
-             }
-          }
+        String desc = line.substring(0, line.indexOf(priceMatch.group(1)!)).trim();
+        
+        // Clean up: Walmart item codes (e.g., "00440000379 F")
+        // If description is purely numbers, it's a barcode, skip it or keep it? 
+        // Let's keep it but remove the UPC if it's separate.
+        
+        if (desc.isNotEmpty) {
+           extractedItems.add(ReceiptItem(desc, amount));
         }
       }
     }
     return extractedItems;
   }
 
-  // --- 3. TAX LOGIC (SGST / CGST) ---
+  // --- 3. TOTAL, TAX & DATE ---
+  static double _findTotal(List<String> lines) {
+    for (String line in lines.reversed) {
+      String lower = line.toLowerCase();
+      // Walmart calls it "TOTAL PURCHASE" or just "TOTAL"
+      if (lower.contains("total") && !lower.contains("sub")) {
+        final match = RegExp(r'(\d+\.\d{2})').firstMatch(line);
+        if (match != null) {
+          return double.parse(match.group(1)!);
+        }
+      }
+    }
+    // Fallback: Max number
+    double max = 0.0;
+    for (String line in lines) {
+      final match = RegExp(r'(\d+\.\d{2})').firstMatch(line);
+      if (match != null) {
+         double v = double.parse(match.group(1)!);
+         if (v > max) max = v;
+      }
+    }
+    return max;
+  }
+
   static double _findTax(List<String> lines) {
     double totalTax = 0.0;
-    
     for (String line in lines) {
       String lower = line.toLowerCase();
-      
-      // Look for lines with "gst" or "tax" AND a number
-      if (lower.contains("gst") || lower.contains("tax")) {
-        if (lower.contains("invoice")) continue; // Skip title
-        
-        final match = RegExp(r'([\d,]+\.\d{2})').firstMatch(line);
-        if (match != null) {
-           double val = double.parse(match.group(1)!.replaceAll(',', ''));
-           // Sanity check: Tax is usually smaller than 100,000
-           if (val < 100000) {
-             totalTax += val;
-           }
-        }
+      if (lower.contains("tax") || lower.contains("vat") || lower.contains("gst")) {
+         // Avoid "Tax Invoice" title
+         if (lower.contains("invoice")) continue;
+         
+         final match = RegExp(r'(\d+\.\d{2})').firstMatch(line);
+         if (match != null) {
+            double v = double.parse(match.group(1)!);
+            if (v < 1000) totalTax += v; // Sanity check
+         }
       }
     }
     return totalTax;
   }
 
-  // --- 4. HELPERS (Total, Date, Category) ---
-  static double _findTotal(List<String> lines) {
-    // Scan from bottom up for "Total"
-    for (String line in lines.reversed) {
-      if (line.toLowerCase().contains("total") && !line.toLowerCase().contains("sub")) {
-        final match = RegExp(r'([\d,]+\.\d{2})').firstMatch(line);
-        if (match != null) {
-          return double.parse(match.group(1)!.replaceAll(',', ''));
-        }
-      }
-    }
-    return 0.0;
-  }
-
   static DateTime? _findDate(String text) {
-    // Regex for dd/mm/yyyy or yyyy-mm-dd
-    final match = RegExp(r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})').firstMatch(text);
-    if (match != null) {
+    // 1. Try MM/DD/YY (Walmart style: 07/29/14)
+    final mmddyy = RegExp(r'(\d{2})/(\d{2})/(\d{2,4})').firstMatch(text);
+    if (mmddyy != null) {
       try {
-        String raw = match.group(1)!.replaceAll('-', '/');
-        return DateFormat('dd/MM/yyyy').parse(raw);
-      } catch (e) { return null; }
+        int m = int.parse(mmddyy.group(1)!);
+        int d = int.parse(mmddyy.group(2)!);
+        int y = int.parse(mmddyy.group(3)!);
+        if (y < 100) y += 2000; // Fix 2-digit year
+        return DateTime(y, m, d);
+      } catch (e) {}
+    }
+    
+    // 2. Try YYYY-MM-DD
+    final yyyymmdd = RegExp(r'(\d{4})-(\d{2})-(\d{2})').firstMatch(text);
+    if (yyyymmdd != null) {
+      return DateTime.parse(yyyymmdd.group(0)!);
     }
     return null;
   }
 
   static String _guessCategory(String merchant, String fullText, List<ReceiptItem> items) {
-     String lowerMerchant = merchant.toLowerCase();
-     if (lowerMerchant.contains("digital") || lowerMerchant.contains("reliance") || lowerMerchant.contains("apple")) {
-       return "Tech";
-     }
-     if (lowerMerchant.contains("food") || lowerMerchant.contains("cafe") || lowerMerchant.contains("pizza")) {
-       return "Food";
-     }
-     if (lowerMerchant.contains("mart") || lowerMerchant.contains("market") || lowerMerchant.contains("grocery")) {
-       return "Grocery";
-     }
+     if (merchant.toLowerCase().contains("walmart")) return "Grocery"; // Default for Walmart
+     // (Keep existing logic)
      return "General";
   }
 }

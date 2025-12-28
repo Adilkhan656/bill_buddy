@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:bill_buddy/data/auth/auth_service.dart';
+import 'package:bill_buddy/util/google_phrase.dart';
+import 'package:bill_buddy/util/rapid_api_pharse.dart';
 import 'package:bill_buddy/util/recipt_logic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +23,7 @@ class AddExpenseScreen extends StatefulWidget {
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  // Header Controllers
+  // Form Controllers
   final _merchantController = TextEditingController();
   final _dateController = TextEditingController();
   final _taxController = TextEditingController();
@@ -29,13 +31,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   
   // State
   File? _receiptImage;
-  List<ReceiptItem> _items = []; // List of items from Parser
+  List<ReceiptItem> _items = []; 
   bool _isLoading = false;
 
   // --- SCANNING LOGIC ---
   Future<void> _scanReceipt() async {
     final picker = ImagePicker();
-    // High quality for better OCR
+    // Use high quality for better text recognition
     final XFile? photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 100);
     
     if (photo == null) return;
@@ -46,14 +48,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
 
     try {
+      // 1. EYES: Use ML Kit to read the raw text (Offline & Free)
       final inputImage = InputImage.fromFilePath(photo.path);
       final textRecognizer = TextRecognizer();
       final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
       await textRecognizer.close();
 
-      // ⚡️ Run Smart Logic
-      ReceiptData data = ReceiptParser.parse(recognizedText.text);
+      // 2. BRAIN: Send text to Gemini to figure out the details
+      // Using our new secure RapidApiParser
+      ReceiptData data = await RapidApiParser.parse(recognizedText.text);
 
+      // 3. Update UI
       setState(() {
         _merchantController.text = data.merchant;
         if (data.date != null) {
@@ -64,7 +69,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         // Populate Items
         _items = data.items;
         
-        // If no items found but we have a total, create a fallback item
+        // Fallback: If AI found a total but no items, make one "Total" item
         if (_items.isEmpty && data.totalAmount > 0) {
            _items.add(ReceiptItem("Total Bill Amount", data.totalAmount));
         }
@@ -72,7 +77,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _updateTotal(); 
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Receipt Scanned!")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("✨ Gemini AI Analysis Complete!")));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
@@ -80,7 +85,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
   }
 
-  // Calculate Total from Items + Tax
+  // Recalculate Total from Items + Tax
   void _updateTotal() {
     double itemTotal = _items.fold(0, (sum, item) => sum + item.amount);
     double tax = double.tryParse(_taxController.text) ?? 0.0;
@@ -244,7 +249,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               Expanded(
                                 flex: 2,
                                 child: TextFormField(
-                                  key: ValueKey("desc_$index"), // Important for list updates
+                                  key: ValueKey("desc_$index"), 
                                   initialValue: item.description,
                                   decoration: const InputDecoration(hintText: "Item Name", contentPadding: EdgeInsets.symmetric(horizontal: 10)),
                                   onChanged: (val) => item.description = val,

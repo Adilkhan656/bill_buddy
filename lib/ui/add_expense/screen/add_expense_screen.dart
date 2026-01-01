@@ -1199,11 +1199,14 @@
 //     );
 //   }
 // }
-
+import 'package:bill_buddy/data/local/database.dart';
 import 'package:bill_buddy/ui/add_expense/view_model/add_expanse_view_model.dart';
 import 'package:bill_buddy/ui/add_expense/widget/expense_widget.dart';
+import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:provider/provider.dart';
 
 
 class AddExpenseScreen extends StatefulWidget {
@@ -1214,178 +1217,139 @@ class AddExpenseScreen extends StatefulWidget {
 }
 
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
-  // Instantiate ViewModel
   final AddExpenseViewModel _viewModel = AddExpenseViewModel();
 
   @override
   Widget build(BuildContext context) {
-    // 🔔 Use ListenableBuilder to rebuild UI when ViewModel changes
+    final currency = Provider.of<SettingsViewModel>(context).currencySymbol;
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: kBgColor,
-          appBar: AppBar(
-            title: const Text("New Expense", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            centerTitle: true,
-            backgroundColor: kBgColor,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-          ),
+          appBar: AppBar(title: const Text("New Expense"), centerTitle: true),
           body: Stack(
             children: [
               SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.all(20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. HEADER
+                    // Header Image
                     ReceiptHeader(
                       imageFile: _viewModel.selectedImage,
                       onTap: () => _showPickerSheet(context),
                     ),
-                    
-                    const SizedBox(height: 30),
-                    
-                    // 2. MAIN DETAILS
-                    const Text("Transaction Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 15),
-                    
-                    ModernTextField(
-                      controller: _viewModel.merchantController,
-                      label: "Merchant / Biller",
-                      icon: Icons.storefront_rounded,
-                    ),
+                    const SizedBox(height: 20),
+
+                    // Main Fields
+                    ModernTextField(controller: _viewModel.merchantController, label: "Merchant", icon: Icons.store),
                     
                     Row(
                       children: [
-                        Expanded(
-                          child: ModernTextField(
-                            controller: _viewModel.totalController,
-                            label: "Total Amount",
-                            icon: Icons.attach_money_rounded,
-                            isNumber: true,
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: ModernTextField(
-                            controller: _viewModel.dateController,
-                            label: "Date",
-                            icon: Icons.calendar_month_rounded,
-                            readOnly: true,
-                            onTap: () => _viewModel.selectDate(context),
-                          ),
-                        ),
+                        Expanded(child: ModernTextField(controller: _viewModel.totalController, label: "Total ($currency)", icon: Icons.attach_money, isNumber: true)),
+                        const SizedBox(width: 10),
+                        Expanded(child: ModernTextField(controller: _viewModel.dateController, label: "Date", icon: Icons.calendar_today, readOnly: true, onTap: () => _viewModel.selectDate(context))),
                       ],
                     ),
 
-                    // 3. ITEMS SECTION
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Items Breakdown", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                        TextButton.icon(
-                          onPressed: _viewModel.addItem,
-                          style: TextButton.styleFrom(foregroundColor: kPrimaryColor),
-                          icon: const Icon(Icons.add_circle, size: 20),
-                          label: const Text("Add Item"),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    
-                    // 4. ITEMS LIST
-                    if (_viewModel.items.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          child: Column(
-                            children: [
-                              Icon(Icons.receipt_long_rounded, size: 40, color: Colors.grey[300]),
-                              const SizedBox(height: 8),
-                              Text("No items listed yet", style: TextStyle(color: Colors.grey[400])),
-                            ],
+                    // ✅ CATEGORY DROPDOWN
+                    StreamBuilder<List<Tag>>(
+                      stream: database.watchAllTags(), // Fetch tags from DB
+                      builder: (context, snapshot) {
+                        final tags = snapshot.data ?? [];
+                        // Default fallback if DB is empty (shouldn't happen due to migration)
+                        if (tags.isEmpty) return const SizedBox.shrink();
+
+                        // Ensure selectedCategory is valid
+                        final validCategory = tags.any((t) => t.name == _viewModel.selectedCategory) 
+                            ? _viewModel.selectedCategory 
+                            : tags.first.name;
+                        
+                        _viewModel.selectedCategory = validCategory;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10)],
                           ),
-                        ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _viewModel.items.length,
-                        itemBuilder: (context, index) {
-                          return ExpenseItemRow(
-                            item: _viewModel.items[index],
-                            onRemove: () => _viewModel.removeItem(index),
-                            onNameChanged: (val) => _viewModel.updateItem(index, 'name', val),
-                            onPriceChanged: (val) => _viewModel.updateItem(index, 'price', double.tryParse(val) ?? 0),
-                          );
-                        },
-                      ),
-                      
-                    const SizedBox(height: 100), // Space for bottom button
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _viewModel.selectedCategory,
+                              isExpanded: true,
+                              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6C63FF)),
+                              items: tags.map((tag) {
+                                return DropdownMenuItem(
+                                  value: tag.name,
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.label, size: 16, color: Color(tag.color ?? 0xFF9E9E9E)),
+                                      const SizedBox(width: 10),
+                                      Text(tag.name),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  // Update ViewModel directly
+                                  // (setState needed to refresh just this widget visually immediately)
+                                  setState(() => _viewModel.selectedCategory = val);
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Items List
+                    const Align(alignment: Alignment.centerLeft, child: Text("Items", style: TextStyle(fontWeight: FontWeight.bold))),
+                    const SizedBox(height: 10),
+                    ...List.generate(_viewModel.items.length, (index) {
+                      return ExpenseItemRow(
+                        item: _viewModel.items[index],
+                        onRemove: () => _viewModel.removeItem(index),
+                        onNameChanged: (v) => _viewModel.updateItem(index, 'name', v),
+                        onPriceChanged: (v) => _viewModel.updateItem(index, 'price', v),
+                      );
+                    }),
+                    
+                    TextButton.icon(
+                      onPressed: _viewModel.addItem, 
+                      icon: const Icon(Icons.add), 
+                      label: const Text("Add Manual Item")
+                    ),
+                    const SizedBox(height: 80),
                   ],
                 ),
               ),
 
-              // LOADING OVERLAY
-              if (_viewModel.isLoading)
-                Container(
-                  color: Colors.black45,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                      child: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(color: kPrimaryColor),
-                          SizedBox(height: 20),
-                          Text("AI Processing...", style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-              // SAVE BUTTON (Floating at bottom)
+              // Save Button
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: kBgColor.withOpacity(0.9),
-                    border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                  ),
+                  color: Colors.white,
                   child: ElevatedButton(
                     onPressed: () async {
-  // Call the save function from ViewModel
-  final success = await _viewModel.saveExpense(context);
-  
-  if (success) {
-    // If saved successfully, show message and go back
-    if (context.mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text("✅ Saved to Database!")),
-       );
-       Navigator.pop(context); // Close the screen
-    }
-  }
-},
+                      bool success = await _viewModel.saveExpense(context);
+                      if (success && context.mounted) Navigator.pop(context);
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: kPrimaryColor,
+                      backgroundColor: const Color(0xFF6C63FF),
                       foregroundColor: Colors.white,
-                      elevation: 8,
-                      shadowColor: kPrimaryColor.withOpacity(0.4),
-                      minimumSize: const Size(double.infinity, 55),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text("Save Transaction", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text("Save Expense"),
                   ),
                 ),
               ),
+
+              if (_viewModel.isLoading) 
+                Container(color: Colors.black45, child: const Center(child: CircularProgressIndicator())),
             ],
           ),
         );
@@ -1393,56 +1357,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  // Bottom Sheet for Image Picker
   void _showPickerSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            const Text("Upload Receipt", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildSheetBtn(Icons.camera_alt_rounded, "Camera", () {
-                  Navigator.pop(context);
-                  _viewModel.pickImage(ImageSource.camera, context);
-                }),
-                _buildSheetBtn(Icons.photo_library_rounded, "Gallery", () {
-                  Navigator.pop(context);
-                  _viewModel.pickImage(ImageSource.gallery, context);
-                }),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSheetBtn(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
+      builder: (ctx) => Wrap(
         children: [
-          Container(
-            height: 70, width: 70,
-            decoration: BoxDecoration(color: kBgColor, borderRadius: BorderRadius.circular(20)),
-            child: Icon(icon, size: 30, color: kPrimaryColor),
-          ),
-          const SizedBox(height: 10),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ListTile(leading: const Icon(Icons.camera), title: const Text("Camera"), onTap: () { Navigator.pop(context); _viewModel.pickImage(ImageSource.camera, context); }),
+          ListTile(leading: const Icon(Icons.photo), title: const Text("Gallery"), onTap: () { Navigator.pop(context); _viewModel.pickImage(ImageSource.gallery, context); }),
         ],
       ),
     );

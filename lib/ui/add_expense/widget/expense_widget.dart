@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 // 🎨 CONSTANTS
 const Color kPrimaryColor = Color(0xFF6C63FF);
@@ -17,6 +19,7 @@ class ReceiptHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+   
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -157,6 +160,7 @@ class ExpenseItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currency = Provider.of<SettingsViewModel>(context).currencySymbol;
     return Dismissible(
       key: UniqueKey(),
       direction: DismissDirection.endToStart,
@@ -197,7 +201,12 @@ class ExpenseItemRow extends StatelessWidget {
               keyboardType: TextInputType.number,
               textAlign: TextAlign.end,
               style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(border: InputBorder.none, prefixText: "\$"),
+             decoration: InputDecoration(
+                border: InputBorder.none, 
+                prefixText: currency, 
+                prefixStyle: const TextStyle(color: Colors.grey)
+              ),
+
               onChanged: onPriceChanged,
             ),
           ),

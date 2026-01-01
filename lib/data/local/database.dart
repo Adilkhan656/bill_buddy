@@ -230,19 +230,29 @@ part 'database.g.dart';
 // 1. TABLE DEFINITIONS
 // ==========================================
 
+// --- UPDATED EXPENSES TABLE ---
 class Expenses extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get userId => text().nullable()();
-  
   RealColumn get amount => real()();
   RealColumn get tax => real().withDefault(const Constant(0.0))();
-  
   TextColumn get merchant => text()();
-  TextColumn get category => text().withDefault(const Constant('General'))();
-  DateTimeColumn get date => dateTime()();
   
-  // Image Path for the receipt photo
+  // Stores the tag name (e.g., "Grocery", "Rent")
+  TextColumn get category => text().withDefault(const Constant('General'))(); 
+  
+  DateTimeColumn get date => dateTime()();
   TextColumn get imagePath => text().nullable()(); 
+}
+
+// --- NEW TAGS TABLE ---
+class Tags extends Table {
+  TextColumn get name => text()(); // e.g. "Office", "Food" (Primary Key)
+  IntColumn get color => integer().nullable()(); // Hex Color Code
+  BoolColumn get isCustom => boolean().withDefault(const Constant(true))(); // To protect default tags
+
+  @override
+  Set<Column> get primaryKey => {name};
 }
 
 class ExpenseItems extends Table {
@@ -257,7 +267,6 @@ class UserProfiles extends Table {
   TextColumn get name => text()();
   TextColumn get email => text()();
   IntColumn get age => integer()();
-  
   @override
   Set<Column> get primaryKey => {uid};
 }
@@ -266,68 +275,73 @@ class UserProfiles extends Table {
 // 2. DATABASE CLASS
 // ==========================================
 
-@DriftDatabase(tables: [Expenses, ExpenseItems, UserProfiles])
+@DriftDatabase(tables: [Expenses, ExpenseItems, UserProfiles, Tags])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  // Bump version to 5 to trigger migration
   @override
-  int get schemaVersion => 4; 
+  int get schemaVersion => 5; 
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
+        await _insertDefaultTags();
       },
       onUpgrade: (Migrator m, int from, int to) async {
+        // Warning: This wipes data for dev purposes. 
         for (final table in allTables) {
           await m.deleteTable(table.actualTableName);
         }
         await m.createAll();
+        await _insertDefaultTags();
       },
     );
   }
 
-  // ==========================================
-  // 3. QUERIES
-  // ==========================================
-
-  // --- EXPENSE QUERIES ---
-  Stream<List<Expense>> watchAllExpenses() {
-    return (select(expenses)
-          ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)]))
-        .watch();
-  }
-
-  Future<int> deleteExpense(int id) {
-    return (delete(expenses)..where((t) => t.id.equals(id))).go();
-  }
-
-  Future<int> insertExpense(ExpensesCompanion entry) {
-    return into(expenses).insert(entry);
-  }
-  
-  Future<void> insertExpenseItems(List<ExpenseItemsCompanion> items) async {
+  Future<void> _insertDefaultTags() async {
     await batch((batch) {
-      batch.insertAll(expenseItems, items);
+      batch.insertAll(tags, [
+        TagsCompanion.insert(name: "General", isCustom: const Value(false), color: const Value(0xFF9E9E9E)),
+        TagsCompanion.insert(name: "Office Expense", isCustom: const Value(false), color: const Value(0xFF2196F3)),
+        TagsCompanion.insert(name: "House Rent", isCustom: const Value(false), color: const Value(0xFFE91E63)),
+        TagsCompanion.insert(name: "Electronics", isCustom: const Value(false), color: const Value(0xFFFF9800)),
+        TagsCompanion.insert(name: "Grocery", isCustom: const Value(false), color: const Value(0xFF4CAF50)),
+        TagsCompanion.insert(name: "Electric Bill", isCustom: const Value(false), color: const Value(0xFFFFEB3B)),
+        TagsCompanion.insert(name: "Personal", isCustom: const Value(false), color: const Value(0xFF9C27B0)),
+      ]);
     });
   }
 
-  // --- USER PROFILE QUERIES (✅ Added This!) ---
-  Future<int> saveUserProfile(UserProfilesCompanion entry) {
-    // insertOnConflictUpdate ensures if the user already exists, we just update their info
-    return into(userProfiles).insertOnConflictUpdate(entry);
+  // --- QUERIES ---
+
+  // 1. Tags
+  Stream<List<Tag>> watchAllTags() => select(tags).watch();
+  Future<int> insertTag(TagsCompanion entry) => into(tags).insert(entry);
+  Future<int> deleteTag(String name) => (delete(tags)..where((t) => t.name.equals(name))).go();
+
+  // 2. Expenses (With Filter Logic!)
+  Stream<List<Expense>> watchExpenses({String? filterTag}) {
+    if (filterTag == null || filterTag == "All") {
+      return (select(expenses)..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])).watch();
+    } else {
+      return (select(expenses)
+        ..where((t) => t.category.equals(filterTag))
+        ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])).watch();
+    }
   }
-  
-  // Optional: To read user data later
-  Future<UserProfile?> getUserProfile(String uid) {
-    return (select(userProfiles)..where((t) => t.uid.equals(uid))).getSingleOrNull();
+
+  // 3. Other Basics
+  Future<int> deleteExpense(int id) => (delete(expenses)..where((t) => t.id.equals(id))).go();
+  Future<int> insertExpense(ExpensesCompanion entry) => into(expenses).insert(entry);
+  Future<void> insertExpenseItems(List<ExpenseItemsCompanion> items) async {
+    await batch((batch) { batch.insertAll(expenseItems, items); });
   }
+  Future<int> saveUserProfile(UserProfilesCompanion entry) => into(userProfiles).insertOnConflictUpdate(entry);
 }
 
-// ==========================================
-// 4. CONNECTION
-// ==========================================
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
@@ -336,5 +350,4 @@ LazyDatabase _openConnection() {
   });
 }
 
-// Global Instance
 final database = AppDatabase();

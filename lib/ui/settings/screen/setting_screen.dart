@@ -1,5 +1,7 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
+import 'package:bill_buddy/ui/login/login_screen.dart';
+import 'package:bill_buddy/ui/settings/screen/edit_profile_screen.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
@@ -12,15 +14,25 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsViewModel>(context);
-    final auth = Provider.of<AuthService>(context, listen: false); // ✅ Access Auth
+    final auth = Provider.of<AuthService>(context, listen: false);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+     backgroundColor: Theme.of(context).brightness == Brightness.dark
+      ? Colors.black
+      : Colors.white,
       appBar: AppBar(title: const Text("Settings")),
+      
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 1. APPEARANCE
+          
+          // ✅ 1. NEW PROFILE SECTION
+          const _SectionHeader(title: "Account"),
+          _buildProfileSection(context, auth),
+          const SizedBox(height: 10),
+
+          // 2. APPEARANCE
           const _SectionHeader(title: "Appearance"),
           SwitchListTile(
             title: const Text("Dark Mode"),
@@ -30,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // 2. CURRENCY
+          // 3. CURRENCY
           const _SectionHeader(title: "Preferences"),
           ListTile(
             leading: const Icon(Icons.attach_money),
@@ -52,7 +64,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // 3. TAGS
+          // 4. TAGS
           const _SectionHeader(title: "Tags & Categories"),
           ListTile(
             leading: const Icon(Icons.label),
@@ -62,7 +74,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // 4. HELP
+          // 5. HELP
           const _SectionHeader(title: "Help Center"),
           ListTile(
             leading: const Icon(Icons.star_rate),
@@ -76,32 +88,151 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // 5. ACCOUNT (Logout)
-          const _SectionHeader(title: "Account"),
+          // 6. LOGOUT (Moved below profile for better UX)
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),
             title: const Text("Log Out", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
-            onTap: () {
-              // Show confirmation dialog
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  backgroundColor: Theme.of(context).cardColor,
-                  title: const Text("Log Out"),
-                  content: const Text("Are you sure you want to log out?"),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(ctx); // Close Dialog
-                        auth.signOut(); // ✅ Trigger Sign Out
-                      },
-                      child: const Text("Log Out", style: TextStyle(color: Colors.redAccent)),
-                    ),
-                  ],
+            onTap: () => _confirmLogout(context, auth),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildProfileSection(BuildContext context, AuthService auth) {
+    final user = auth.currentUser;
+    final cardColor = Theme.of(context).cardColor;
+final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (user == null) return const SizedBox.shrink();
+
+    // Use FutureBuilder to load user profile
+    return FutureBuilder<UserProfile?>(
+      // ⚠️ Note: We are cheating slightly here by using a Future as a Stream 
+      // or just re-triggering setState. ideally database should return Stream.
+      // For now, FutureBuilder is fine, but we need to refresh it.
+      future: database.getUserProfile(user.uid), 
+      builder: (context, snapshot) {
+        // If loading, show spinner
+        if (snapshot.connectionState == ConnectionState.waiting) {
+           return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+        }
+
+        final profile = snapshot.data;
+        // Logic: Try DB name -> Try Google Name -> Default "User"
+        final name = (profile?.name != null && profile!.name.isNotEmpty) 
+            ? profile.name 
+            : (user.displayName ?? "User");
+            
+        final email = profile?.email ?? user.email ?? "No Email";
+        final age = profile?.age ?? 0;
+
+        return InkWell(
+          // ✅ CLICK TO EDIT
+          onTap: () async {
+            // Navigate to Edit Screen
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+            );
+            // Trigger rebuild to show new data
+            (context as Element).markNeedsBuild(); 
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+              ],
+            ),
+            child: Row(
+              children: [
+                // Avatar
+                CircleAvatar(
+  radius: 30,
+  // Dark Mode: Solid Teal BG | Light Mode: Light Teal BG
+  backgroundColor: isDark 
+      ? Theme.of(context).primaryColor 
+      : Theme.of(context).primaryColor.withOpacity(0.1),
+  child: Text(
+    name.isNotEmpty ? name[0].toUpperCase() : "U",
+    // ✅ FIX: White Text in Dark Mode, Teal Text in Light Mode
+    style: TextStyle(
+      fontSize: 24, 
+      fontWeight: FontWeight.bold, 
+      color: isDark ? Colors.white : Theme.of(context).primaryColor
+    ),
+  ),
+),
+                const SizedBox(width: 16),
+                
+                // Text Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email,
+                        style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodySmall?.color),
+                      ),
+                      // ✅ SHOW AGE
+                      if (age > 0) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8)
+                          ),
+                          child: Text(
+                            "$age years old",
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
                 ),
-              );
+                // Edit Icon
+                const Icon(Icons.edit_outlined, color: Colors.grey),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmLogout(BuildContext context, AuthService auth) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
+        title: const Text("Log Out"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              auth.signOut();
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false, 
+                );
+              }
             },
+            
+            child: const Text("Log Out", style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -191,11 +322,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
         title, 
-        style: TextStyle(
-          color: headerColor, 
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        )
+        style: TextStyle(color: headerColor, fontWeight: FontWeight.bold, fontSize: 14)
       ),
     );
   }

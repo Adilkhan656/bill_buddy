@@ -1206,6 +1206,7 @@ import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 
@@ -1349,8 +1350,33 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ),
               ),
 
-              if (_viewModel.isLoading) 
-                Container(color: Colors.black45, child: const Center(child: CircularProgressIndicator())),
+            if (_viewModel.isLoading) 
+  Container(
+    color: Colors.black45, // Dark overlay background
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ✅ YOUR LOTTIE ANIMATION HERE
+          Lottie.asset(
+            'assets/lottie/loading.json', // Make sure this matches your file name
+            width: 200, // Adjust size to fit your design
+            height: 200,
+          ),
+          const SizedBox(height: 16),
+          
+          const Text(
+            "Analyzing Receipt...", 
+            style: TextStyle(
+              color: Colors.white, 
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
             ],
           ),
         );

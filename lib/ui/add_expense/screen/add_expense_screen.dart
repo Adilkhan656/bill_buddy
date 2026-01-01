@@ -1270,7 +1270,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+
+                           color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10)],
                           ),
@@ -1331,14 +1332,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   padding: const EdgeInsets.all(20),
-                  color: Colors.white,
-                  child: ElevatedButton(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                    child: ElevatedButton(
                     onPressed: () async {
                       bool success = await _viewModel.saveExpense(context);
                       if (success && context.mounted) Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C63FF),
+                      backgroundColor: const Color(0xFF006064),
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

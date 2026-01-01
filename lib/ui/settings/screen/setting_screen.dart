@@ -1,3 +1,4 @@
+import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:drift/drift.dart' as drift;
@@ -11,6 +12,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsViewModel>(context);
+    final auth = Provider.of<AuthService>(context, listen: false); // ✅ Access Auth
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -36,6 +38,7 @@ class SettingsScreen extends StatelessWidget {
             trailing: DropdownButton<String>(
               value: settings.currencySymbol,
               underline: Container(),
+              dropdownColor: Theme.of(context).cardColor,
               items: const [
                 DropdownMenuItem(value: "\$", child: Text("\$ Dollar")),
                 DropdownMenuItem(value: "₹", child: Text("₹ Rupee")),
@@ -71,6 +74,35 @@ class SettingsScreen extends StatelessWidget {
             title: const Text("Contact Us"),
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Contact support@billbuddy.com"))),
           ),
+          const Divider(),
+
+          // 5. ACCOUNT (Logout)
+          const _SectionHeader(title: "Account"),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.redAccent),
+            title: const Text("Log Out", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+            onTap: () {
+              // Show confirmation dialog
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: Theme.of(context).cardColor,
+                  title: const Text("Log Out"),
+                  content: const Text("Are you sure you want to log out?"),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx); // Close Dialog
+                        auth.signOut(); // ✅ Trigger Sign Out
+                      },
+                      child: const Text("Log Out", style: TextStyle(color: Colors.redAccent)),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -81,6 +113,7 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
         title: const Text("Manage Tags"),
         content: SizedBox(
           width: double.maxFinite,
@@ -100,7 +133,7 @@ class SettingsScreen extends StatelessWidget {
                         return ListTile(
                           dense: true,
                           leading: Icon(Icons.circle, size: 12, color: Color(tag.color ?? 0xFF9E9E9E)),
-                          title: Text(tag.name),
+                          title: Text(tag.name, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
                           trailing: tag.isCustom 
                              ? IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => database.deleteTag(tag.name))
                              : null, 
@@ -110,9 +143,16 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
               ),
+              const SizedBox(height: 10),
               TextField(
                 controller: textController,
-                decoration: const InputDecoration(labelText: "New Tag Name", border: OutlineInputBorder()),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                decoration: InputDecoration(
+                  labelText: "New Tag Name",
+                  labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).dividerColor)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).primaryColor)),
+                ),
               ),
             ],
           ),
@@ -141,11 +181,22 @@ class SettingsScreen extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader({required this.title});
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headerColor = isDark ? const Color(0xFF2DD4BF) : Theme.of(context).primaryColor;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(title, style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+      child: Text(
+        title, 
+        style: TextStyle(
+          color: headerColor, 
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        )
+      ),
     );
   }
 }

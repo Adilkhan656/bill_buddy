@@ -468,7 +468,7 @@ class _MainScreenState extends State<MainScreen> {
   String _selectedFilterTag = "All"; // Filter State
   final HomeViewModel _viewModel = HomeViewModel(); 
 
-  final Color _primaryColor = const Color(0xFF6C63FF);
+  final Color _primaryColor = Color(0xFF006064);
 
   @override
   Widget build(BuildContext context) {
@@ -496,17 +496,17 @@ class _MainScreenState extends State<MainScreen> {
       // Bottom Nav
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
+        notchMargin: 6,
         child: SizedBox(
           height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: Icon(Icons.dashboard_rounded, color: _currentIndex == 0 ? _primaryColor : Colors.grey),
+                icon: Icon(Icons.home, color: _currentIndex == 0 ? _primaryColor : Colors.grey),
                 onPressed: () => setState(() => _currentIndex = 0),
               ),
-              const SizedBox(width: 40), // Gap for FAB
+              const SizedBox(width: 20), // Gap for FAB
               IconButton(
                 icon: Icon(Icons.settings_rounded, color: _currentIndex == 1 ? _primaryColor : Colors.grey),
                 onPressed: () => setState(() => _currentIndex = 1),
@@ -631,16 +631,20 @@ Widget _buildHomeTab() {
 
 // 🔽 HELPER WIDGET: The Filter Dropdown
 Widget _buildFilterDropdown() {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final cardColor = Theme.of(context).cardColor;
+  final textColor = Theme.of(context).colorScheme.onSurface;
+  final borderColor = isDark ? Colors.grey[800]! : Colors.grey.shade200;
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
     decoration: BoxDecoration(
 
-      color: Colors.white,
+      color: cardColor,
       borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))
       ],
-      border: Border.all(color: Colors.grey.shade200),
+      border: Border.all(color: borderColor),
     ),
     child: StreamBuilder<List<Tag>>(
       stream: database.watchAllTags(),
@@ -654,9 +658,10 @@ Widget _buildFilterDropdown() {
         return DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: _selectedFilterTag,
+            dropdownColor: cardColor,
             borderRadius: BorderRadius.circular(20),
             icon: Icon(Icons.filter_list_rounded, color: _primaryColor, size: 20),
-            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 13),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w600, fontSize: 13),
             onChanged: (String? newValue) {
               if (newValue != null) {
                 setState(() => _selectedFilterTag = newValue);

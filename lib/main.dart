@@ -75,11 +75,8 @@
 //     );
 //   }
 // }
-
 import 'package:bill_buddy/ui/home/home_screen.dart';
-import 'package:bill_buddy/ui/login/login_screen.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -88,6 +85,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'data/auth/auth_service.dart';
 
+import 'ui/login/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -97,10 +95,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // 1. Auth Service
         Provider<AuthService>(create: (_) => AuthService()),
-        
-        // 2. Settings ViewModel (For Dark Mode & Currency)
         ChangeNotifierProvider(create: (_) => SettingsViewModel()),
       ],
       child: const MyApp(),
@@ -111,26 +106,52 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // ✅ 1. Define your new Deep Teal Color
+  static const Color _deepTeal = Color(0xFF0F766E);
+
   @override
   Widget build(BuildContext context) {
-    // Listen to Settings
     final settings = Provider.of<SettingsViewModel>(context);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Smart Expense',
-      
-      // ✅ Dynamic Theme Control
       themeMode: settings.themeMode,
+      
+      // ✅ LIGHT THEME
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6C63FF), brightness: Brightness.light),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+        brightness: Brightness.light,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _deepTeal,
+          brightness: Brightness.light,
+          primary: _deepTeal,
+          surface: Colors.white, // Cards will be white
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF5F7FA), // Light Grey Background
+        cardColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFF5F7FA),
+          foregroundColor: Colors.black87,
+        ),
       ),
+
+      // ✅ DARK THEME
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6C63FF), brightness: Brightness.dark),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _deepTeal,
+          brightness: Brightness.dark,
+          primary: _deepTeal, // Keep Teal as primary even in dark mode
+          surface: const Color(0xFF1E1E1E), // Cards will be Dark Grey
+        ),
+        scaffoldBackgroundColor: const Color(0xFF121212), // Almost Black Background
+        cardColor: const Color(0xFF1E1E1E),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF121212),
+          foregroundColor: Colors.white,
+        ),
       ),
       
       home: const AuthWrapper(),
@@ -151,11 +172,9 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-
         if (snapshot.hasData) {
-          return const MainScreen(); // ✅ Goes to Dashboard/Home
+          return const MainScreen();
         }
-
         return const LoginScreen();
       },
     );

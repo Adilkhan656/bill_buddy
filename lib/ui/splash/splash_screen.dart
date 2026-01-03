@@ -2,7 +2,6 @@ import 'package:bill_buddy/ui/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'package:lottie/lottie.dart';
 import '../../data/auth/auth_service.dart';
 import '../onboarding/onboarding_screen.dart'; // We will create this next
 import '../login/login_screen.dart';

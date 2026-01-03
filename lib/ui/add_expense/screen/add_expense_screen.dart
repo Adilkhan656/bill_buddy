@@ -1205,7 +1205,6 @@ import 'package:bill_buddy/ui/add_expense/widget/expense_widget.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 

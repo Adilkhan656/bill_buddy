@@ -1494,7 +1494,9 @@ class ImprovedReceiptParser {
       String lower = line.toLowerCase();
 
       if (lower.startsWith('total') || lower.startsWith('tax') || 
-          lower.startsWith('cgst') || lower.startsWith('sgst')) break;
+          lower.startsWith('cgst') || lower.startsWith('sgst')) {
+        break;
+      }
       
       if (line.length < 5 || _isAddressLine(lower)) continue;
 
@@ -1538,7 +1540,7 @@ class ImprovedReceiptParser {
 
     // Pattern 3: Extract from multiple numbers
     var prices = _extractPrices(line);
-    if (prices.length >= 1) {
+    if (prices.isNotEmpty) {
       double price = prices.last;
       String desc = line.replaceAll(RegExp(r'[\d\.,₹Rs]+'), ' ').trim();
       desc = _cleanDesc(desc);

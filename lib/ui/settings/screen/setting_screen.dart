@@ -3,6 +3,7 @@ import 'package:bill_buddy/data/local/database.dart';
 import 'package:bill_buddy/ui/login/login_screen.dart';
 import 'package:bill_buddy/ui/settings/screen/edit_profile_screen.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
+import 'package:bill_buddy/util/category_style_helper.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -239,7 +240,7 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
     );
   }
 
-  void _showTagsDialog(BuildContext context) {
+ void _showTagsDialog(BuildContext context) {
     final textController = TextEditingController();
     showDialog(
       context: context,
@@ -263,8 +264,9 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
                         final tag = tags[index];
                         return ListTile(
                           dense: true,
-                          leading: Icon(Icons.circle, size: 12, color: Color(tag.color ?? 0xFF9E9E9E)),
-                          title: Text(tag.name, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                          // ✅ SHOW ASSET ICON
+                          leading: CategoryStyleHelper.getTagIcon(tag.name, size: 24),
+                          title: Text(tag.name),
                           trailing: tag.isCustom 
                              ? IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => database.deleteTag(tag.name))
                              : null, 

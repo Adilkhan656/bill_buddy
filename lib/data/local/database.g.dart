@@ -3,14 +3,17 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
+class $ExpensesTable extends Expenses
+    with drift.TableInfo<$ExpensesTable, Expense> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ExpensesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
     'id',
     aliasedName,
     false,
@@ -21,79 +24,88 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  static const drift.VerificationMeta _userIdMeta =
+      const drift.VerificationMeta('userId');
   @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
+  late final drift.GeneratedColumn<String> userId =
+      drift.GeneratedColumn<String>(
+        'user_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _amountMeta =
+      const drift.VerificationMeta('amount');
+  @override
+  late final drift.GeneratedColumn<double> amount =
+      drift.GeneratedColumn<double>(
+        'amount',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _taxMeta = const drift.VerificationMeta(
+    'tax',
   );
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-    'amount',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _taxMeta = const VerificationMeta('tax');
-  @override
-  late final GeneratedColumn<double> tax = GeneratedColumn<double>(
+  late final drift.GeneratedColumn<double> tax = drift.GeneratedColumn<double>(
     'tax',
     aliasedName,
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0.0),
+    defaultValue: const drift.Constant(0.0),
   );
-  static const VerificationMeta _merchantMeta = const VerificationMeta(
-    'merchant',
-  );
+  static const drift.VerificationMeta _merchantMeta =
+      const drift.VerificationMeta('merchant');
   @override
-  late final GeneratedColumn<String> merchant = GeneratedColumn<String>(
-    'merchant',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _categoryMeta = const VerificationMeta(
-    'category',
-  );
+  late final drift.GeneratedColumn<String> merchant =
+      drift.GeneratedColumn<String>(
+        'merchant',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _categoryMeta =
+      const drift.VerificationMeta('category');
   @override
-  late final GeneratedColumn<String> category = GeneratedColumn<String>(
-    'category',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('General'),
-  );
-  static const VerificationMeta _dateMeta = const VerificationMeta('date');
-  @override
-  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+  late final drift.GeneratedColumn<String> category =
+      drift.GeneratedColumn<String>(
+        'category',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const drift.Constant('General'),
+      );
+  static const drift.VerificationMeta _dateMeta = const drift.VerificationMeta(
     'date',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _imagePathMeta = const VerificationMeta(
-    'imagePath',
   );
   @override
-  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
-    'image_path',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+  late final drift.GeneratedColumn<DateTime> date =
+      drift.GeneratedColumn<DateTime>(
+        'date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _imagePathMeta =
+      const drift.VerificationMeta('imagePath');
   @override
-  List<GeneratedColumn> get $columns => [
+  late final drift.GeneratedColumn<String> imagePath =
+      drift.GeneratedColumn<String>(
+        'image_path',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<drift.GeneratedColumn> get $columns => [
     id,
     userId,
     amount,
@@ -109,11 +121,11 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   String get actualTableName => $name;
   static const String $name = 'expenses';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Expense> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<Expense> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -170,7 +182,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
   Expense map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -216,7 +228,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   }
 }
 
-class Expense extends DataClass implements Insertable<Expense> {
+class Expense extends drift.DataClass implements drift.Insertable<Expense> {
   final int id;
   final String? userId;
   final double amount;
@@ -236,37 +248,37 @@ class Expense extends DataClass implements Insertable<Expense> {
     this.imagePath,
   });
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
     if (!nullToAbsent || userId != null) {
-      map['user_id'] = Variable<String>(userId);
+      map['user_id'] = drift.Variable<String>(userId);
     }
-    map['amount'] = Variable<double>(amount);
-    map['tax'] = Variable<double>(tax);
-    map['merchant'] = Variable<String>(merchant);
-    map['category'] = Variable<String>(category);
-    map['date'] = Variable<DateTime>(date);
+    map['amount'] = drift.Variable<double>(amount);
+    map['tax'] = drift.Variable<double>(tax);
+    map['merchant'] = drift.Variable<String>(merchant);
+    map['category'] = drift.Variable<String>(category);
+    map['date'] = drift.Variable<DateTime>(date);
     if (!nullToAbsent || imagePath != null) {
-      map['image_path'] = Variable<String>(imagePath);
+      map['image_path'] = drift.Variable<String>(imagePath);
     }
     return map;
   }
 
   ExpensesCompanion toCompanion(bool nullToAbsent) {
     return ExpensesCompanion(
-      id: Value(id),
+      id: drift.Value(id),
       userId: userId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(userId),
-      amount: Value(amount),
-      tax: Value(tax),
-      merchant: Value(merchant),
-      category: Value(category),
-      date: Value(date),
+          ? const drift.Value.absent()
+          : drift.Value(userId),
+      amount: drift.Value(amount),
+      tax: drift.Value(tax),
+      merchant: drift.Value(merchant),
+      category: drift.Value(category),
+      date: drift.Value(date),
       imagePath: imagePath == null && nullToAbsent
-          ? const Value.absent()
-          : Value(imagePath),
+          ? const drift.Value.absent()
+          : drift.Value(imagePath),
     );
   }
 
@@ -274,7 +286,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return Expense(
       id: serializer.fromJson<int>(json['id']),
       userId: serializer.fromJson<String?>(json['userId']),
@@ -288,7 +300,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'userId': serializer.toJson<String?>(userId),
@@ -303,13 +315,13 @@ class Expense extends DataClass implements Insertable<Expense> {
 
   Expense copyWith({
     int? id,
-    Value<String?> userId = const Value.absent(),
+    drift.Value<String?> userId = const drift.Value.absent(),
     double? amount,
     double? tax,
     String? merchant,
     String? category,
     DateTime? date,
-    Value<String?> imagePath = const Value.absent(),
+    drift.Value<String?> imagePath = const drift.Value.absent(),
   }) => Expense(
     id: id ?? this.id,
     userId: userId.present ? userId.value : this.userId,
@@ -365,48 +377,48 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.imagePath == this.imagePath);
 }
 
-class ExpensesCompanion extends UpdateCompanion<Expense> {
-  final Value<int> id;
-  final Value<String?> userId;
-  final Value<double> amount;
-  final Value<double> tax;
-  final Value<String> merchant;
-  final Value<String> category;
-  final Value<DateTime> date;
-  final Value<String?> imagePath;
+class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
+  final drift.Value<int> id;
+  final drift.Value<String?> userId;
+  final drift.Value<double> amount;
+  final drift.Value<double> tax;
+  final drift.Value<String> merchant;
+  final drift.Value<String> category;
+  final drift.Value<DateTime> date;
+  final drift.Value<String?> imagePath;
   const ExpensesCompanion({
-    this.id = const Value.absent(),
-    this.userId = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.tax = const Value.absent(),
-    this.merchant = const Value.absent(),
-    this.category = const Value.absent(),
-    this.date = const Value.absent(),
-    this.imagePath = const Value.absent(),
+    this.id = const drift.Value.absent(),
+    this.userId = const drift.Value.absent(),
+    this.amount = const drift.Value.absent(),
+    this.tax = const drift.Value.absent(),
+    this.merchant = const drift.Value.absent(),
+    this.category = const drift.Value.absent(),
+    this.date = const drift.Value.absent(),
+    this.imagePath = const drift.Value.absent(),
   });
   ExpensesCompanion.insert({
-    this.id = const Value.absent(),
-    this.userId = const Value.absent(),
+    this.id = const drift.Value.absent(),
+    this.userId = const drift.Value.absent(),
     required double amount,
-    this.tax = const Value.absent(),
+    this.tax = const drift.Value.absent(),
     required String merchant,
-    this.category = const Value.absent(),
+    this.category = const drift.Value.absent(),
     required DateTime date,
-    this.imagePath = const Value.absent(),
-  }) : amount = Value(amount),
-       merchant = Value(merchant),
-       date = Value(date);
-  static Insertable<Expense> custom({
-    Expression<int>? id,
-    Expression<String>? userId,
-    Expression<double>? amount,
-    Expression<double>? tax,
-    Expression<String>? merchant,
-    Expression<String>? category,
-    Expression<DateTime>? date,
-    Expression<String>? imagePath,
+    this.imagePath = const drift.Value.absent(),
+  }) : amount = drift.Value(amount),
+       merchant = drift.Value(merchant),
+       date = drift.Value(date);
+  static drift.Insertable<Expense> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? userId,
+    drift.Expression<double>? amount,
+    drift.Expression<double>? tax,
+    drift.Expression<String>? merchant,
+    drift.Expression<String>? category,
+    drift.Expression<DateTime>? date,
+    drift.Expression<String>? imagePath,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
       if (amount != null) 'amount': amount,
@@ -419,14 +431,14 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 
   ExpensesCompanion copyWith({
-    Value<int>? id,
-    Value<String?>? userId,
-    Value<double>? amount,
-    Value<double>? tax,
-    Value<String>? merchant,
-    Value<String>? category,
-    Value<DateTime>? date,
-    Value<String?>? imagePath,
+    drift.Value<int>? id,
+    drift.Value<String?>? userId,
+    drift.Value<double>? amount,
+    drift.Value<double>? tax,
+    drift.Value<String>? merchant,
+    drift.Value<String>? category,
+    drift.Value<DateTime>? date,
+    drift.Value<String?>? imagePath,
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
@@ -441,31 +453,31 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = drift.Variable<int>(id.value);
     }
     if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
+      map['user_id'] = drift.Variable<String>(userId.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = drift.Variable<double>(amount.value);
     }
     if (tax.present) {
-      map['tax'] = Variable<double>(tax.value);
+      map['tax'] = drift.Variable<double>(tax.value);
     }
     if (merchant.present) {
-      map['merchant'] = Variable<String>(merchant.value);
+      map['merchant'] = drift.Variable<String>(merchant.value);
     }
     if (category.present) {
-      map['category'] = Variable<String>(category.value);
+      map['category'] = drift.Variable<String>(category.value);
     }
     if (date.present) {
-      map['date'] = Variable<DateTime>(date.value);
+      map['date'] = drift.Variable<DateTime>(date.value);
     }
     if (imagePath.present) {
-      map['image_path'] = Variable<String>(imagePath.value);
+      map['image_path'] = drift.Variable<String>(imagePath.value);
     }
     return map;
   }
@@ -487,14 +499,16 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
 }
 
 class $ExpenseItemsTable extends ExpenseItems
-    with TableInfo<$ExpenseItemsTable, ExpenseItem> {
+    with drift.TableInfo<$ExpenseItemsTable, ExpenseItem> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ExpenseItemsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
     'id',
     aliasedName,
     false,
@@ -505,11 +519,10 @@ class $ExpenseItemsTable extends ExpenseItems
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _expenseIdMeta = const VerificationMeta(
-    'expenseId',
-  );
+  static const drift.VerificationMeta _expenseIdMeta =
+      const drift.VerificationMeta('expenseId');
   @override
-  late final GeneratedColumn<int> expenseId = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> expenseId = drift.GeneratedColumn<int>(
     'expense_id',
     aliasedName,
     false,
@@ -519,37 +532,41 @@ class $ExpenseItemsTable extends ExpenseItems
       'REFERENCES expenses (id)',
     ),
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const drift.VerificationMeta _nameMeta = const drift.VerificationMeta(
+    'name',
+  );
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+  late final drift.GeneratedColumn<String> name = drift.GeneratedColumn<String>(
     'name',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  static const drift.VerificationMeta _amountMeta =
+      const drift.VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-    'amount',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
+  late final drift.GeneratedColumn<double> amount =
+      drift.GeneratedColumn<double>(
+        'amount',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
   @override
-  List<GeneratedColumn> get $columns => [id, expenseId, name, amount];
+  List<drift.GeneratedColumn> get $columns => [id, expenseId, name, amount];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'expense_items';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<ExpenseItem> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<ExpenseItem> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -582,7 +599,7 @@ class $ExpenseItemsTable extends ExpenseItems
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
   ExpenseItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -612,7 +629,8 @@ class $ExpenseItemsTable extends ExpenseItems
   }
 }
 
-class ExpenseItem extends DataClass implements Insertable<ExpenseItem> {
+class ExpenseItem extends drift.DataClass
+    implements drift.Insertable<ExpenseItem> {
   final int id;
   final int expenseId;
   final String name;
@@ -624,21 +642,21 @@ class ExpenseItem extends DataClass implements Insertable<ExpenseItem> {
     required this.amount,
   });
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['expense_id'] = Variable<int>(expenseId);
-    map['name'] = Variable<String>(name);
-    map['amount'] = Variable<double>(amount);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['expense_id'] = drift.Variable<int>(expenseId);
+    map['name'] = drift.Variable<String>(name);
+    map['amount'] = drift.Variable<double>(amount);
     return map;
   }
 
   ExpenseItemsCompanion toCompanion(bool nullToAbsent) {
     return ExpenseItemsCompanion(
-      id: Value(id),
-      expenseId: Value(expenseId),
-      name: Value(name),
-      amount: Value(amount),
+      id: drift.Value(id),
+      expenseId: drift.Value(expenseId),
+      name: drift.Value(name),
+      amount: drift.Value(amount),
     );
   }
 
@@ -646,7 +664,7 @@ class ExpenseItem extends DataClass implements Insertable<ExpenseItem> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return ExpenseItem(
       id: serializer.fromJson<int>(json['id']),
       expenseId: serializer.fromJson<int>(json['expenseId']),
@@ -656,7 +674,7 @@ class ExpenseItem extends DataClass implements Insertable<ExpenseItem> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'expenseId': serializer.toJson<int>(expenseId),
@@ -708,32 +726,32 @@ class ExpenseItem extends DataClass implements Insertable<ExpenseItem> {
           other.amount == this.amount);
 }
 
-class ExpenseItemsCompanion extends UpdateCompanion<ExpenseItem> {
-  final Value<int> id;
-  final Value<int> expenseId;
-  final Value<String> name;
-  final Value<double> amount;
+class ExpenseItemsCompanion extends drift.UpdateCompanion<ExpenseItem> {
+  final drift.Value<int> id;
+  final drift.Value<int> expenseId;
+  final drift.Value<String> name;
+  final drift.Value<double> amount;
   const ExpenseItemsCompanion({
-    this.id = const Value.absent(),
-    this.expenseId = const Value.absent(),
-    this.name = const Value.absent(),
-    this.amount = const Value.absent(),
+    this.id = const drift.Value.absent(),
+    this.expenseId = const drift.Value.absent(),
+    this.name = const drift.Value.absent(),
+    this.amount = const drift.Value.absent(),
   });
   ExpenseItemsCompanion.insert({
-    this.id = const Value.absent(),
+    this.id = const drift.Value.absent(),
     required int expenseId,
     required String name,
     required double amount,
-  }) : expenseId = Value(expenseId),
-       name = Value(name),
-       amount = Value(amount);
-  static Insertable<ExpenseItem> custom({
-    Expression<int>? id,
-    Expression<int>? expenseId,
-    Expression<String>? name,
-    Expression<double>? amount,
+  }) : expenseId = drift.Value(expenseId),
+       name = drift.Value(name),
+       amount = drift.Value(amount);
+  static drift.Insertable<ExpenseItem> custom({
+    drift.Expression<int>? id,
+    drift.Expression<int>? expenseId,
+    drift.Expression<String>? name,
+    drift.Expression<double>? amount,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (expenseId != null) 'expense_id': expenseId,
       if (name != null) 'name': name,
@@ -742,10 +760,10 @@ class ExpenseItemsCompanion extends UpdateCompanion<ExpenseItem> {
   }
 
   ExpenseItemsCompanion copyWith({
-    Value<int>? id,
-    Value<int>? expenseId,
-    Value<String>? name,
-    Value<double>? amount,
+    drift.Value<int>? id,
+    drift.Value<int>? expenseId,
+    drift.Value<String>? name,
+    drift.Value<double>? amount,
   }) {
     return ExpenseItemsCompanion(
       id: id ?? this.id,
@@ -756,19 +774,19 @@ class ExpenseItemsCompanion extends UpdateCompanion<ExpenseItem> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = drift.Variable<int>(id.value);
     }
     if (expenseId.present) {
-      map['expense_id'] = Variable<int>(expenseId.value);
+      map['expense_id'] = drift.Variable<int>(expenseId.value);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = drift.Variable<String>(name.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = drift.Variable<double>(amount.value);
     }
     return map;
   }
@@ -786,41 +804,50 @@ class ExpenseItemsCompanion extends UpdateCompanion<ExpenseItem> {
 }
 
 class $UserProfilesTable extends UserProfiles
-    with TableInfo<$UserProfilesTable, UserProfile> {
+    with drift.TableInfo<$UserProfilesTable, UserProfile> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UserProfilesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _uidMeta = const VerificationMeta('uid');
+  static const drift.VerificationMeta _uidMeta = const drift.VerificationMeta(
+    'uid',
+  );
   @override
-  late final GeneratedColumn<String> uid = GeneratedColumn<String>(
+  late final drift.GeneratedColumn<String> uid = drift.GeneratedColumn<String>(
     'uid',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const drift.VerificationMeta _nameMeta = const drift.VerificationMeta(
+    'name',
+  );
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+  late final drift.GeneratedColumn<String> name = drift.GeneratedColumn<String>(
     'name',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _emailMeta = const VerificationMeta('email');
-  @override
-  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+  static const drift.VerificationMeta _emailMeta = const drift.VerificationMeta(
     'email',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
   );
-  static const VerificationMeta _ageMeta = const VerificationMeta('age');
   @override
-  late final GeneratedColumn<int> age = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<String> email =
+      drift.GeneratedColumn<String>(
+        'email',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _ageMeta = const drift.VerificationMeta(
+    'age',
+  );
+  @override
+  late final drift.GeneratedColumn<int> age = drift.GeneratedColumn<int>(
     'age',
     aliasedName,
     false,
@@ -828,18 +855,18 @@ class $UserProfilesTable extends UserProfiles
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [uid, name, email, age];
+  List<drift.GeneratedColumn> get $columns => [uid, name, email, age];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'user_profiles';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<UserProfile> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<UserProfile> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('uid')) {
       context.handle(
@@ -877,7 +904,7 @@ class $UserProfilesTable extends UserProfiles
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {uid};
+  Set<drift.GeneratedColumn> get $primaryKey => {uid};
   @override
   UserProfile map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -907,7 +934,8 @@ class $UserProfilesTable extends UserProfiles
   }
 }
 
-class UserProfile extends DataClass implements Insertable<UserProfile> {
+class UserProfile extends drift.DataClass
+    implements drift.Insertable<UserProfile> {
   final String uid;
   final String name;
   final String email;
@@ -919,21 +947,21 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     required this.age,
   });
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uid'] = Variable<String>(uid);
-    map['name'] = Variable<String>(name);
-    map['email'] = Variable<String>(email);
-    map['age'] = Variable<int>(age);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['uid'] = drift.Variable<String>(uid);
+    map['name'] = drift.Variable<String>(name);
+    map['email'] = drift.Variable<String>(email);
+    map['age'] = drift.Variable<int>(age);
     return map;
   }
 
   UserProfilesCompanion toCompanion(bool nullToAbsent) {
     return UserProfilesCompanion(
-      uid: Value(uid),
-      name: Value(name),
-      email: Value(email),
-      age: Value(age),
+      uid: drift.Value(uid),
+      name: drift.Value(name),
+      email: drift.Value(email),
+      age: drift.Value(age),
     );
   }
 
@@ -941,7 +969,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return UserProfile(
       uid: serializer.fromJson<String>(json['uid']),
       name: serializer.fromJson<String>(json['name']),
@@ -951,7 +979,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'uid': serializer.toJson<String>(uid),
       'name': serializer.toJson<String>(name),
@@ -999,37 +1027,37 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           other.age == this.age);
 }
 
-class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
-  final Value<String> uid;
-  final Value<String> name;
-  final Value<String> email;
-  final Value<int> age;
-  final Value<int> rowid;
+class UserProfilesCompanion extends drift.UpdateCompanion<UserProfile> {
+  final drift.Value<String> uid;
+  final drift.Value<String> name;
+  final drift.Value<String> email;
+  final drift.Value<int> age;
+  final drift.Value<int> rowid;
   const UserProfilesCompanion({
-    this.uid = const Value.absent(),
-    this.name = const Value.absent(),
-    this.email = const Value.absent(),
-    this.age = const Value.absent(),
-    this.rowid = const Value.absent(),
+    this.uid = const drift.Value.absent(),
+    this.name = const drift.Value.absent(),
+    this.email = const drift.Value.absent(),
+    this.age = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
   });
   UserProfilesCompanion.insert({
     required String uid,
     required String name,
     required String email,
     required int age,
-    this.rowid = const Value.absent(),
-  }) : uid = Value(uid),
-       name = Value(name),
-       email = Value(email),
-       age = Value(age);
-  static Insertable<UserProfile> custom({
-    Expression<String>? uid,
-    Expression<String>? name,
-    Expression<String>? email,
-    Expression<int>? age,
-    Expression<int>? rowid,
+    this.rowid = const drift.Value.absent(),
+  }) : uid = drift.Value(uid),
+       name = drift.Value(name),
+       email = drift.Value(email),
+       age = drift.Value(age);
+  static drift.Insertable<UserProfile> custom({
+    drift.Expression<String>? uid,
+    drift.Expression<String>? name,
+    drift.Expression<String>? email,
+    drift.Expression<int>? age,
+    drift.Expression<int>? rowid,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (uid != null) 'uid': uid,
       if (name != null) 'name': name,
       if (email != null) 'email': email,
@@ -1039,11 +1067,11 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }
 
   UserProfilesCompanion copyWith({
-    Value<String>? uid,
-    Value<String>? name,
-    Value<String>? email,
-    Value<int>? age,
-    Value<int>? rowid,
+    drift.Value<String>? uid,
+    drift.Value<String>? name,
+    drift.Value<String>? email,
+    drift.Value<int>? age,
+    drift.Value<int>? rowid,
   }) {
     return UserProfilesCompanion(
       uid: uid ?? this.uid,
@@ -1055,22 +1083,22 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (uid.present) {
-      map['uid'] = Variable<String>(uid.value);
+      map['uid'] = drift.Variable<String>(uid.value);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = drift.Variable<String>(name.value);
     }
     if (email.present) {
-      map['email'] = Variable<String>(email.value);
+      map['email'] = drift.Variable<String>(email.value);
     }
     if (age.present) {
-      map['age'] = Variable<int>(age.value);
+      map['age'] = drift.Variable<int>(age.value);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
+      map['rowid'] = drift.Variable<int>(rowid.value);
     }
     return map;
   }
@@ -1088,34 +1116,37 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }
 }
 
-class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
+class $TagsTable extends Tags with drift.TableInfo<$TagsTable, Tag> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const drift.VerificationMeta _nameMeta = const drift.VerificationMeta(
+    'name',
+  );
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+  late final drift.GeneratedColumn<String> name = drift.GeneratedColumn<String>(
     'name',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  static const drift.VerificationMeta _colorMeta = const drift.VerificationMeta(
+    'color',
+  );
   @override
-  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> color = drift.GeneratedColumn<int>(
     'color',
     aliasedName,
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _isCustomMeta = const VerificationMeta(
-    'isCustom',
-  );
+  static const drift.VerificationMeta _isCustomMeta =
+      const drift.VerificationMeta('isCustom');
   @override
-  late final GeneratedColumn<bool> isCustom = GeneratedColumn<bool>(
+  late final drift.GeneratedColumn<bool> isCustom = drift.GeneratedColumn<bool>(
     'is_custom',
     aliasedName,
     false,
@@ -1124,21 +1155,21 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("is_custom" IN (0, 1))',
     ),
-    defaultValue: const Constant(true),
+    defaultValue: const drift.Constant(true),
   );
   @override
-  List<GeneratedColumn> get $columns => [name, color, isCustom];
+  List<drift.GeneratedColumn> get $columns => [name, color, isCustom];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'tags';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Tag> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<Tag> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('name')) {
       context.handle(
@@ -1164,7 +1195,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {name};
+  Set<drift.GeneratedColumn> get $primaryKey => {name};
   @override
   Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1190,29 +1221,29 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   }
 }
 
-class Tag extends DataClass implements Insertable<Tag> {
+class Tag extends drift.DataClass implements drift.Insertable<Tag> {
   final String name;
   final int? color;
   final bool isCustom;
   const Tag({required this.name, this.color, required this.isCustom});
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['name'] = Variable<String>(name);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['name'] = drift.Variable<String>(name);
     if (!nullToAbsent || color != null) {
-      map['color'] = Variable<int>(color);
+      map['color'] = drift.Variable<int>(color);
     }
-    map['is_custom'] = Variable<bool>(isCustom);
+    map['is_custom'] = drift.Variable<bool>(isCustom);
     return map;
   }
 
   TagsCompanion toCompanion(bool nullToAbsent) {
     return TagsCompanion(
-      name: Value(name),
+      name: drift.Value(name),
       color: color == null && nullToAbsent
-          ? const Value.absent()
-          : Value(color),
-      isCustom: Value(isCustom),
+          ? const drift.Value.absent()
+          : drift.Value(color),
+      isCustom: drift.Value(isCustom),
     );
   }
 
@@ -1220,7 +1251,7 @@ class Tag extends DataClass implements Insertable<Tag> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return Tag(
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int?>(json['color']),
@@ -1229,7 +1260,7 @@ class Tag extends DataClass implements Insertable<Tag> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int?>(color),
@@ -1239,7 +1270,7 @@ class Tag extends DataClass implements Insertable<Tag> {
 
   Tag copyWith({
     String? name,
-    Value<int?> color = const Value.absent(),
+    drift.Value<int?> color = const drift.Value.absent(),
     bool? isCustom,
   }) => Tag(
     name: name ?? this.name,
@@ -1275,30 +1306,30 @@ class Tag extends DataClass implements Insertable<Tag> {
           other.isCustom == this.isCustom);
 }
 
-class TagsCompanion extends UpdateCompanion<Tag> {
-  final Value<String> name;
-  final Value<int?> color;
-  final Value<bool> isCustom;
-  final Value<int> rowid;
+class TagsCompanion extends drift.UpdateCompanion<Tag> {
+  final drift.Value<String> name;
+  final drift.Value<int?> color;
+  final drift.Value<bool> isCustom;
+  final drift.Value<int> rowid;
   const TagsCompanion({
-    this.name = const Value.absent(),
-    this.color = const Value.absent(),
-    this.isCustom = const Value.absent(),
-    this.rowid = const Value.absent(),
+    this.name = const drift.Value.absent(),
+    this.color = const drift.Value.absent(),
+    this.isCustom = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
   });
   TagsCompanion.insert({
     required String name,
-    this.color = const Value.absent(),
-    this.isCustom = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : name = Value(name);
-  static Insertable<Tag> custom({
-    Expression<String>? name,
-    Expression<int>? color,
-    Expression<bool>? isCustom,
-    Expression<int>? rowid,
+    this.color = const drift.Value.absent(),
+    this.isCustom = const drift.Value.absent(),
+    this.rowid = const drift.Value.absent(),
+  }) : name = drift.Value(name);
+  static drift.Insertable<Tag> custom({
+    drift.Expression<String>? name,
+    drift.Expression<int>? color,
+    drift.Expression<bool>? isCustom,
+    drift.Expression<int>? rowid,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (name != null) 'name': name,
       if (color != null) 'color': color,
       if (isCustom != null) 'is_custom': isCustom,
@@ -1307,10 +1338,10 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   }
 
   TagsCompanion copyWith({
-    Value<String>? name,
-    Value<int?>? color,
-    Value<bool>? isCustom,
-    Value<int>? rowid,
+    drift.Value<String>? name,
+    drift.Value<int?>? color,
+    drift.Value<bool>? isCustom,
+    drift.Value<int>? rowid,
   }) {
     return TagsCompanion(
       name: name ?? this.name,
@@ -1321,19 +1352,19 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = drift.Variable<String>(name.value);
     }
     if (color.present) {
-      map['color'] = Variable<int>(color.value);
+      map['color'] = drift.Variable<int>(color.value);
     }
     if (isCustom.present) {
-      map['is_custom'] = Variable<bool>(isCustom.value);
+      map['is_custom'] = drift.Variable<bool>(isCustom.value);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
+      map['rowid'] = drift.Variable<int>(rowid.value);
     }
     return map;
   }
@@ -1350,7 +1381,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   }
 }
 
-abstract class _$AppDatabase extends GeneratedDatabase {
+abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
@@ -1358,10 +1389,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $UserProfilesTable userProfiles = $UserProfilesTable(this);
   late final $TagsTable tags = $TagsTable(this);
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
+      allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
+  List<drift.DatabaseSchemaEntity> get allSchemaEntities => [
     expenses,
     expenseItems,
     userProfiles,
@@ -1371,36 +1402,40 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$ExpensesTableCreateCompanionBuilder =
     ExpensesCompanion Function({
-      Value<int> id,
-      Value<String?> userId,
+      drift.Value<int> id,
+      drift.Value<String?> userId,
       required double amount,
-      Value<double> tax,
+      drift.Value<double> tax,
       required String merchant,
-      Value<String> category,
+      drift.Value<String> category,
       required DateTime date,
-      Value<String?> imagePath,
+      drift.Value<String?> imagePath,
     });
 typedef $$ExpensesTableUpdateCompanionBuilder =
     ExpensesCompanion Function({
-      Value<int> id,
-      Value<String?> userId,
-      Value<double> amount,
-      Value<double> tax,
-      Value<String> merchant,
-      Value<String> category,
-      Value<DateTime> date,
-      Value<String?> imagePath,
+      drift.Value<int> id,
+      drift.Value<String?> userId,
+      drift.Value<double> amount,
+      drift.Value<double> tax,
+      drift.Value<String> merchant,
+      drift.Value<String> category,
+      drift.Value<DateTime> date,
+      drift.Value<String?> imagePath,
     });
 
 final class $$ExpensesTableReferences
-    extends BaseReferences<_$AppDatabase, $ExpensesTable, Expense> {
+    extends drift.BaseReferences<_$AppDatabase, $ExpensesTable, Expense> {
   $$ExpensesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$ExpenseItemsTable, List<ExpenseItem>>
-  _expenseItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.expenseItems,
-    aliasName: $_aliasNameGenerator(db.expenses.id, db.expenseItems.expenseId),
-  );
+  static drift.MultiTypedResultKey<$ExpenseItemsTable, List<ExpenseItem>>
+  _expenseItemsRefsTable(_$AppDatabase db) =>
+      drift.MultiTypedResultKey.fromTable(
+        db.expenseItems,
+        aliasName: drift.$_aliasNameGenerator(
+          db.expenses.id,
+          db.expenseItems.expenseId,
+        ),
+      );
 
   $$ExpenseItemsTableProcessedTableManager get expenseItemsRefs {
     final manager = $$ExpenseItemsTableTableManager(
@@ -1409,14 +1444,14 @@ final class $$ExpensesTableReferences
     ).filter((f) => f.expenseId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_expenseItemsRefsTable($_db));
-    return ProcessedTableManager(
+    return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
 
 class $$ExpensesTableFilterComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
+    extends drift.Composer<_$AppDatabase, $ExpensesTable> {
   $$ExpensesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1424,48 +1459,48 @@ class $$ExpensesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  drift.ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get userId => $composableBuilder(
+  drift.ColumnFilters<String> get userId => $composableBuilder(
     column: $table.userId,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
+  drift.ColumnFilters<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<double> get tax => $composableBuilder(
+  drift.ColumnFilters<double> get tax => $composableBuilder(
     column: $table.tax,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get merchant => $composableBuilder(
+  drift.ColumnFilters<String> get merchant => $composableBuilder(
     column: $table.merchant,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get category => $composableBuilder(
+  drift.ColumnFilters<String> get category => $composableBuilder(
     column: $table.category,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get date => $composableBuilder(
+  drift.ColumnFilters<DateTime> get date => $composableBuilder(
     column: $table.date,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get imagePath => $composableBuilder(
+  drift.ColumnFilters<String> get imagePath => $composableBuilder(
     column: $table.imagePath,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  Expression<bool> expenseItemsRefs(
-    Expression<bool> Function($$ExpenseItemsTableFilterComposer f) f,
+  drift.Expression<bool> expenseItemsRefs(
+    drift.Expression<bool> Function($$ExpenseItemsTableFilterComposer f) f,
   ) {
     final $$ExpenseItemsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -1491,7 +1526,7 @@ class $$ExpensesTableFilterComposer
 }
 
 class $$ExpensesTableOrderingComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
+    extends drift.Composer<_$AppDatabase, $ExpensesTable> {
   $$ExpensesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1499,49 +1534,49 @@ class $$ExpensesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get userId => $composableBuilder(
+  drift.ColumnOrderings<String> get userId => $composableBuilder(
     column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
+  drift.ColumnOrderings<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get tax => $composableBuilder(
+  drift.ColumnOrderings<double> get tax => $composableBuilder(
     column: $table.tax,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get merchant => $composableBuilder(
+  drift.ColumnOrderings<String> get merchant => $composableBuilder(
     column: $table.merchant,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get category => $composableBuilder(
+  drift.ColumnOrderings<String> get category => $composableBuilder(
     column: $table.category,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get date => $composableBuilder(
+  drift.ColumnOrderings<DateTime> get date => $composableBuilder(
     column: $table.date,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get imagePath => $composableBuilder(
+  drift.ColumnOrderings<String> get imagePath => $composableBuilder(
     column: $table.imagePath,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 }
 
 class $$ExpensesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
+    extends drift.Composer<_$AppDatabase, $ExpensesTable> {
   $$ExpensesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1549,32 +1584,32 @@ class $$ExpensesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get userId =>
+  drift.GeneratedColumn<String> get userId =>
       $composableBuilder(column: $table.userId, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
+  drift.GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<double> get tax =>
+  drift.GeneratedColumn<double> get tax =>
       $composableBuilder(column: $table.tax, builder: (column) => column);
 
-  GeneratedColumn<String> get merchant =>
+  drift.GeneratedColumn<String> get merchant =>
       $composableBuilder(column: $table.merchant, builder: (column) => column);
 
-  GeneratedColumn<String> get category =>
+  drift.GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get date =>
+  drift.GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
-  GeneratedColumn<String> get imagePath =>
+  drift.GeneratedColumn<String> get imagePath =>
       $composableBuilder(column: $table.imagePath, builder: (column) => column);
 
-  Expression<T> expenseItemsRefs<T extends Object>(
-    Expression<T> Function($$ExpenseItemsTableAnnotationComposer a) f,
+  drift.Expression<T> expenseItemsRefs<T extends Object>(
+    drift.Expression<T> Function($$ExpenseItemsTableAnnotationComposer a) f,
   ) {
     final $$ExpenseItemsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -1601,7 +1636,7 @@ class $$ExpensesTableAnnotationComposer
 
 class $$ExpensesTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $ExpensesTable,
           Expense,
@@ -1612,11 +1647,11 @@ class $$ExpensesTableTableManager
           $$ExpensesTableUpdateCompanionBuilder,
           (Expense, $$ExpensesTableReferences),
           Expense,
-          PrefetchHooks Function({bool expenseItemsRefs})
+          drift.PrefetchHooks Function({bool expenseItemsRefs})
         > {
   $$ExpensesTableTableManager(_$AppDatabase db, $ExpensesTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -1627,14 +1662,14 @@ class $$ExpensesTableTableManager
               $$ExpensesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<String?> userId = const Value.absent(),
-                Value<double> amount = const Value.absent(),
-                Value<double> tax = const Value.absent(),
-                Value<String> merchant = const Value.absent(),
-                Value<String> category = const Value.absent(),
-                Value<DateTime> date = const Value.absent(),
-                Value<String?> imagePath = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<String?> userId = const drift.Value.absent(),
+                drift.Value<double> amount = const drift.Value.absent(),
+                drift.Value<double> tax = const drift.Value.absent(),
+                drift.Value<String> merchant = const drift.Value.absent(),
+                drift.Value<String> category = const drift.Value.absent(),
+                drift.Value<DateTime> date = const drift.Value.absent(),
+                drift.Value<String?> imagePath = const drift.Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
                 userId: userId,
@@ -1647,14 +1682,14 @@ class $$ExpensesTableTableManager
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<String?> userId = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<String?> userId = const drift.Value.absent(),
                 required double amount,
-                Value<double> tax = const Value.absent(),
+                drift.Value<double> tax = const drift.Value.absent(),
                 required String merchant,
-                Value<String> category = const Value.absent(),
+                drift.Value<String> category = const drift.Value.absent(),
                 required DateTime date,
-                Value<String?> imagePath = const Value.absent(),
+                drift.Value<String?> imagePath = const drift.Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
                 userId: userId,
@@ -1674,14 +1709,14 @@ class $$ExpensesTableTableManager
               )
               .toList(),
           prefetchHooksCallback: ({expenseItemsRefs = false}) {
-            return PrefetchHooks(
+            return drift.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [if (expenseItemsRefs) db.expenseItems],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (expenseItemsRefs)
-                    await $_getPrefetchedData<
+                    await drift.$_getPrefetchedData<
                       Expense,
                       $ExpensesTable,
                       ExpenseItem
@@ -1707,7 +1742,7 @@ class $$ExpensesTableTableManager
 }
 
 typedef $$ExpensesTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $ExpensesTable,
       Expense,
@@ -1718,30 +1753,31 @@ typedef $$ExpensesTableProcessedTableManager =
       $$ExpensesTableUpdateCompanionBuilder,
       (Expense, $$ExpensesTableReferences),
       Expense,
-      PrefetchHooks Function({bool expenseItemsRefs})
+      drift.PrefetchHooks Function({bool expenseItemsRefs})
     >;
 typedef $$ExpenseItemsTableCreateCompanionBuilder =
     ExpenseItemsCompanion Function({
-      Value<int> id,
+      drift.Value<int> id,
       required int expenseId,
       required String name,
       required double amount,
     });
 typedef $$ExpenseItemsTableUpdateCompanionBuilder =
     ExpenseItemsCompanion Function({
-      Value<int> id,
-      Value<int> expenseId,
-      Value<String> name,
-      Value<double> amount,
+      drift.Value<int> id,
+      drift.Value<int> expenseId,
+      drift.Value<String> name,
+      drift.Value<double> amount,
     });
 
 final class $$ExpenseItemsTableReferences
-    extends BaseReferences<_$AppDatabase, $ExpenseItemsTable, ExpenseItem> {
+    extends
+        drift.BaseReferences<_$AppDatabase, $ExpenseItemsTable, ExpenseItem> {
   $$ExpenseItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $ExpensesTable _expenseIdTable(_$AppDatabase db) =>
       db.expenses.createAlias(
-        $_aliasNameGenerator(db.expenseItems.expenseId, db.expenses.id),
+        drift.$_aliasNameGenerator(db.expenseItems.expenseId, db.expenses.id),
       );
 
   $$ExpensesTableProcessedTableManager get expenseId {
@@ -1753,14 +1789,14 @@ final class $$ExpenseItemsTableReferences
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_expenseIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(
+    return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
 }
 
 class $$ExpenseItemsTableFilterComposer
-    extends Composer<_$AppDatabase, $ExpenseItemsTable> {
+    extends drift.Composer<_$AppDatabase, $ExpenseItemsTable> {
   $$ExpenseItemsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1768,19 +1804,19 @@ class $$ExpenseItemsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  drift.ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get name => $composableBuilder(
+  drift.ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
+  drift.ColumnFilters<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
   $$ExpensesTableFilterComposer get expenseId {
@@ -1808,7 +1844,7 @@ class $$ExpenseItemsTableFilterComposer
 }
 
 class $$ExpenseItemsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ExpenseItemsTable> {
+    extends drift.Composer<_$AppDatabase, $ExpenseItemsTable> {
   $$ExpenseItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1816,19 +1852,19 @@ class $$ExpenseItemsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get name => $composableBuilder(
+  drift.ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
+  drift.ColumnOrderings<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
   $$ExpensesTableOrderingComposer get expenseId {
@@ -1856,7 +1892,7 @@ class $$ExpenseItemsTableOrderingComposer
 }
 
 class $$ExpenseItemsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ExpenseItemsTable> {
+    extends drift.Composer<_$AppDatabase, $ExpenseItemsTable> {
   $$ExpenseItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1864,13 +1900,13 @@ class $$ExpenseItemsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
+  drift.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
+  drift.GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
   $$ExpensesTableAnnotationComposer get expenseId {
@@ -1899,7 +1935,7 @@ class $$ExpenseItemsTableAnnotationComposer
 
 class $$ExpenseItemsTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $ExpenseItemsTable,
           ExpenseItem,
@@ -1910,11 +1946,11 @@ class $$ExpenseItemsTableTableManager
           $$ExpenseItemsTableUpdateCompanionBuilder,
           (ExpenseItem, $$ExpenseItemsTableReferences),
           ExpenseItem,
-          PrefetchHooks Function({bool expenseId})
+          drift.PrefetchHooks Function({bool expenseId})
         > {
   $$ExpenseItemsTableTableManager(_$AppDatabase db, $ExpenseItemsTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -1925,10 +1961,10 @@ class $$ExpenseItemsTableTableManager
               $$ExpenseItemsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<int> expenseId = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<double> amount = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<int> expenseId = const drift.Value.absent(),
+                drift.Value<String> name = const drift.Value.absent(),
+                drift.Value<double> amount = const drift.Value.absent(),
               }) => ExpenseItemsCompanion(
                 id: id,
                 expenseId: expenseId,
@@ -1937,7 +1973,7 @@ class $$ExpenseItemsTableTableManager
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
                 required int expenseId,
                 required String name,
                 required double amount,
@@ -1956,12 +1992,12 @@ class $$ExpenseItemsTableTableManager
               )
               .toList(),
           prefetchHooksCallback: ({expenseId = false}) {
-            return PrefetchHooks(
+            return drift.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
               addJoins:
                   <
-                    T extends TableManagerState<
+                    T extends drift.TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -2001,7 +2037,7 @@ class $$ExpenseItemsTableTableManager
 }
 
 typedef $$ExpenseItemsTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $ExpenseItemsTable,
       ExpenseItem,
@@ -2012,7 +2048,7 @@ typedef $$ExpenseItemsTableProcessedTableManager =
       $$ExpenseItemsTableUpdateCompanionBuilder,
       (ExpenseItem, $$ExpenseItemsTableReferences),
       ExpenseItem,
-      PrefetchHooks Function({bool expenseId})
+      drift.PrefetchHooks Function({bool expenseId})
     >;
 typedef $$UserProfilesTableCreateCompanionBuilder =
     UserProfilesCompanion Function({
@@ -2020,19 +2056,19 @@ typedef $$UserProfilesTableCreateCompanionBuilder =
       required String name,
       required String email,
       required int age,
-      Value<int> rowid,
+      drift.Value<int> rowid,
     });
 typedef $$UserProfilesTableUpdateCompanionBuilder =
     UserProfilesCompanion Function({
-      Value<String> uid,
-      Value<String> name,
-      Value<String> email,
-      Value<int> age,
-      Value<int> rowid,
+      drift.Value<String> uid,
+      drift.Value<String> name,
+      drift.Value<String> email,
+      drift.Value<int> age,
+      drift.Value<int> rowid,
     });
 
 class $$UserProfilesTableFilterComposer
-    extends Composer<_$AppDatabase, $UserProfilesTable> {
+    extends drift.Composer<_$AppDatabase, $UserProfilesTable> {
   $$UserProfilesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2040,29 +2076,29 @@ class $$UserProfilesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get uid => $composableBuilder(
+  drift.ColumnFilters<String> get uid => $composableBuilder(
     column: $table.uid,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get name => $composableBuilder(
+  drift.ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get email => $composableBuilder(
+  drift.ColumnFilters<String> get email => $composableBuilder(
     column: $table.email,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<int> get age => $composableBuilder(
+  drift.ColumnFilters<int> get age => $composableBuilder(
     column: $table.age,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 }
 
 class $$UserProfilesTableOrderingComposer
-    extends Composer<_$AppDatabase, $UserProfilesTable> {
+    extends drift.Composer<_$AppDatabase, $UserProfilesTable> {
   $$UserProfilesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2070,29 +2106,29 @@ class $$UserProfilesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get uid => $composableBuilder(
+  drift.ColumnOrderings<String> get uid => $composableBuilder(
     column: $table.uid,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get name => $composableBuilder(
+  drift.ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get email => $composableBuilder(
+  drift.ColumnOrderings<String> get email => $composableBuilder(
     column: $table.email,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get age => $composableBuilder(
+  drift.ColumnOrderings<int> get age => $composableBuilder(
     column: $table.age,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 }
 
 class $$UserProfilesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $UserProfilesTable> {
+    extends drift.Composer<_$AppDatabase, $UserProfilesTable> {
   $$UserProfilesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2100,22 +2136,22 @@ class $$UserProfilesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get uid =>
+  drift.GeneratedColumn<String> get uid =>
       $composableBuilder(column: $table.uid, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
+  drift.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<String> get email =>
+  drift.GeneratedColumn<String> get email =>
       $composableBuilder(column: $table.email, builder: (column) => column);
 
-  GeneratedColumn<int> get age =>
+  drift.GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
 }
 
 class $$UserProfilesTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $UserProfilesTable,
           UserProfile,
@@ -2126,14 +2162,18 @@ class $$UserProfilesTableTableManager
           $$UserProfilesTableUpdateCompanionBuilder,
           (
             UserProfile,
-            BaseReferences<_$AppDatabase, $UserProfilesTable, UserProfile>,
+            drift.BaseReferences<
+              _$AppDatabase,
+              $UserProfilesTable,
+              UserProfile
+            >,
           ),
           UserProfile,
-          PrefetchHooks Function()
+          drift.PrefetchHooks Function()
         > {
   $$UserProfilesTableTableManager(_$AppDatabase db, $UserProfilesTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -2144,11 +2184,11 @@ class $$UserProfilesTableTableManager
               $$UserProfilesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> uid = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> email = const Value.absent(),
-                Value<int> age = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
+                drift.Value<String> uid = const drift.Value.absent(),
+                drift.Value<String> name = const drift.Value.absent(),
+                drift.Value<String> email = const drift.Value.absent(),
+                drift.Value<int> age = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
               }) => UserProfilesCompanion(
                 uid: uid,
                 name: name,
@@ -2162,7 +2202,7 @@ class $$UserProfilesTableTableManager
                 required String name,
                 required String email,
                 required int age,
-                Value<int> rowid = const Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
               }) => UserProfilesCompanion.insert(
                 uid: uid,
                 name: name,
@@ -2171,7 +2211,9 @@ class $$UserProfilesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2179,7 +2221,7 @@ class $$UserProfilesTableTableManager
 }
 
 typedef $$UserProfilesTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $UserProfilesTable,
       UserProfile,
@@ -2190,27 +2232,28 @@ typedef $$UserProfilesTableProcessedTableManager =
       $$UserProfilesTableUpdateCompanionBuilder,
       (
         UserProfile,
-        BaseReferences<_$AppDatabase, $UserProfilesTable, UserProfile>,
+        drift.BaseReferences<_$AppDatabase, $UserProfilesTable, UserProfile>,
       ),
       UserProfile,
-      PrefetchHooks Function()
+      drift.PrefetchHooks Function()
     >;
 typedef $$TagsTableCreateCompanionBuilder =
     TagsCompanion Function({
       required String name,
-      Value<int?> color,
-      Value<bool> isCustom,
-      Value<int> rowid,
+      drift.Value<int?> color,
+      drift.Value<bool> isCustom,
+      drift.Value<int> rowid,
     });
 typedef $$TagsTableUpdateCompanionBuilder =
     TagsCompanion Function({
-      Value<String> name,
-      Value<int?> color,
-      Value<bool> isCustom,
-      Value<int> rowid,
+      drift.Value<String> name,
+      drift.Value<int?> color,
+      drift.Value<bool> isCustom,
+      drift.Value<int> rowid,
     });
 
-class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
+class $$TagsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $TagsTable> {
   $$TagsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2218,23 +2261,24 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get name => $composableBuilder(
+  drift.ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<int> get color => $composableBuilder(
+  drift.ColumnFilters<int> get color => $composableBuilder(
     column: $table.color,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get isCustom => $composableBuilder(
+  drift.ColumnFilters<bool> get isCustom => $composableBuilder(
     column: $table.isCustom,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 }
 
-class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
+class $$TagsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $TagsTable> {
   $$TagsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2242,24 +2286,24 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get name => $composableBuilder(
+  drift.ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get color => $composableBuilder(
+  drift.ColumnOrderings<int> get color => $composableBuilder(
     column: $table.color,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get isCustom => $composableBuilder(
+  drift.ColumnOrderings<bool> get isCustom => $composableBuilder(
     column: $table.isCustom,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 }
 
 class $$TagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TagsTable> {
+    extends drift.Composer<_$AppDatabase, $TagsTable> {
   $$TagsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2267,19 +2311,19 @@ class $$TagsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get name =>
+  drift.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<int> get color =>
+  drift.GeneratedColumn<int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
 
-  GeneratedColumn<bool> get isCustom =>
+  drift.GeneratedColumn<bool> get isCustom =>
       $composableBuilder(column: $table.isCustom, builder: (column) => column);
 }
 
 class $$TagsTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $TagsTable,
           Tag,
@@ -2288,13 +2332,13 @@ class $$TagsTableTableManager
           $$TagsTableAnnotationComposer,
           $$TagsTableCreateCompanionBuilder,
           $$TagsTableUpdateCompanionBuilder,
-          (Tag, BaseReferences<_$AppDatabase, $TagsTable, Tag>),
+          (Tag, drift.BaseReferences<_$AppDatabase, $TagsTable, Tag>),
           Tag,
-          PrefetchHooks Function()
+          drift.PrefetchHooks Function()
         > {
   $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -2305,10 +2349,10 @@ class $$TagsTableTableManager
               $$TagsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> name = const Value.absent(),
-                Value<int?> color = const Value.absent(),
-                Value<bool> isCustom = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
+                drift.Value<String> name = const drift.Value.absent(),
+                drift.Value<int?> color = const drift.Value.absent(),
+                drift.Value<bool> isCustom = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
               }) => TagsCompanion(
                 name: name,
                 color: color,
@@ -2318,9 +2362,9 @@ class $$TagsTableTableManager
           createCompanionCallback:
               ({
                 required String name,
-                Value<int?> color = const Value.absent(),
-                Value<bool> isCustom = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
+                drift.Value<int?> color = const drift.Value.absent(),
+                drift.Value<bool> isCustom = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
               }) => TagsCompanion.insert(
                 name: name,
                 color: color,
@@ -2328,7 +2372,9 @@ class $$TagsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (e.readTable(table), drift.BaseReferences(db, table, e)),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2336,7 +2382,7 @@ class $$TagsTableTableManager
 }
 
 typedef $$TagsTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $TagsTable,
       Tag,
@@ -2345,9 +2391,9 @@ typedef $$TagsTableProcessedTableManager =
       $$TagsTableAnnotationComposer,
       $$TagsTableCreateCompanionBuilder,
       $$TagsTableUpdateCompanionBuilder,
-      (Tag, BaseReferences<_$AppDatabase, $TagsTable, Tag>),
+      (Tag, drift.BaseReferences<_$AppDatabase, $TagsTable, Tag>),
       Tag,
-      PrefetchHooks Function()
+      drift.PrefetchHooks Function()
     >;
 
 class $AppDatabaseManager {

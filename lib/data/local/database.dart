@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:drift/drift.dart' as drift;
 
 part 'database.g.dart';
 
@@ -59,38 +60,51 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 5; 
-
-  @override
-  MigrationStrategy get migration {
-    return MigrationStrategy(
-      onCreate: (Migrator m) async {
-        await m.createAll();
-        await _insertDefaultTags();
-      },
-      onUpgrade: (Migrator m, int from, int to) async {
-        for (final table in allTables) {
-          await m.deleteTable(table.actualTableName);
-        }
-        await m.createAll();
-        await _insertDefaultTags();
-      },
-    );
-  }
-
-  Future<void> _insertDefaultTags() async {
-    await batch((batch) {
-      batch.insertAll(tags, [
-        TagsCompanion.insert(name: "General", isCustom: const Value(false), color: const Value(0xFF9E9E9E)),
-        TagsCompanion.insert(name: "Office Expense", isCustom: const Value(false), color: const Value(0xFF2196F3)),
-        TagsCompanion.insert(name: "House Rent", isCustom: const Value(false), color: const Value(0xFFE91E63)),
-        TagsCompanion.insert(name: "Electronics", isCustom: const Value(false), color: const Value(0xFFFF9800)),
-        TagsCompanion.insert(name: "Grocery", isCustom: const Value(false), color: const Value(0xFF4CAF50)),
-        TagsCompanion.insert(name: "Electric Bill", isCustom: const Value(false), color: const Value(0xFFFFEB3B)),
-        TagsCompanion.insert(name: "Personal", isCustom: const Value(false), color: const Value(0xFF9C27B0)),
-      ]);
-    });
-  }
-
+@override
+  MigrationStrategy get migration => MigrationStrategy(
+    // 1. ON CREATE: Run this when the app is installed for the first time
+    onCreate: (Migrator m) async {
+      await m.createAll(); // Creates the tables
+      
+      // ✅ INSERT DEFAULT TAGS (Matches your new Asset Icons)
+      await batch((batch) {
+        batch.insertAll(tags, [
+          // Basic Needs
+          TagsCompanion.insert(name: "General", color: const drift.Value(0xFF9E9E9E), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Food", color: const drift.Value(0xFFFF5722), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Grocery", color: const drift.Value(0xFF4CAF50), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Fuel", color: const drift.Value(0xFFF44336), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Rent", color: const drift.Value(0xFF795548), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "House", color: const drift.Value(0xFF8D6E63), isCustom: const drift.Value(false)), 
+          
+          // Lifestyle
+          TagsCompanion.insert(name: "Shopping", color: const drift.Value(0xFFE91E63), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Entertainment", color: const drift.Value(0xFF9C27B0), isCustom: const drift.Value(false)), 
+          TagsCompanion.insert(name: "Travel", color: const drift.Value(0xFFFF9800), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Gym", color: const drift.Value(0xFF3F51B5), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Pets", color: const drift.Value(0xFF795548), isCustom: const drift.Value(false)), 
+          
+          // Bills & Work
+          TagsCompanion.insert(name: "Electric Bill", color: const drift.Value(0xFFFFC107), isCustom: const drift.Value(false)), 
+          TagsCompanion.insert(name: "Electronics", color: const drift.Value(0xFF607D8B), isCustom: const drift.Value(false)), 
+          TagsCompanion.insert(name: "Education", color: const drift.Value(0xFFFFC107), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Medical", color: const drift.Value(0xFFE53935), isCustom: const drift.Value(false)), 
+          TagsCompanion.insert(name: "Office", color: const drift.Value(0xFF607D8B), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Investment", color: const drift.Value(0xFF4CAF50), isCustom: const drift.Value(false)),
+          
+          // Income/People
+          TagsCompanion.insert(name: "Salary", color: const drift.Value(0xFF009688), isCustom: const drift.Value(false)),
+          TagsCompanion.insert(name: "Personal", color: const drift.Value(0xFF3F51B5), isCustom: const drift.Value(false)), 
+        ]);
+      });
+    },
+    
+    // 2. ON UPGRADE: If you change schema version, this handles updates
+    // For development, we often just want to wipe and restart
+    beforeOpen: (details) async {
+       await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
   // ==========================================
   // 3. QUERIES
   // ==========================================

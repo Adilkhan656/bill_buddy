@@ -1203,6 +1203,7 @@ import 'package:bill_buddy/data/local/database.dart';
 import 'package:bill_buddy/ui/add_expense/view_model/add_expanse_view_model.dart';
 import 'package:bill_buddy/ui/add_expense/widget/expense_widget.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
+import 'package:bill_buddy/util/category_style_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
@@ -1279,19 +1280,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             child: DropdownButton<String>(
                               value: _viewModel.selectedCategory,
                               isExpanded: true,
-                              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6C63FF)),
+                              
+                              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF0F766E)),
+                              menuMaxHeight: 300,
                               items: tags.map((tag) {
-                                return DropdownMenuItem(
-                                  value: tag.name,
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.label, size: 16, color: Color(tag.color ?? 0xFF9E9E9E)),
-                                      const SizedBox(width: 10),
-                                      Text(tag.name),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
+  return DropdownMenuItem(
+    value: tag.name,
+    child: Row(
+      children: [
+        // ✅ Show the icon in Add Expense too
+        CategoryStyleHelper.getTagIcon(tag.name, size: 20),
+        const SizedBox(width: 10),
+        Text(tag.name),
+      ],
+    ),
+  );
+}).toList(),
                               onChanged: (val) {
                                 if (val != null) {
                                   // Update ViewModel directly

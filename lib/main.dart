@@ -60,10 +60,15 @@ static const Color _brightTeal = Color(0xFF2DD4BF);
           seedColor: _deepTeal,
           brightness: Brightness.light,
           primary: _deepTeal,
+          
           surface: Colors.white,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
-        cardColor: Colors.white,
+        
+  scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
+  cardColor: Colors.white,
+  bottomAppBarTheme: const BottomAppBarThemeData(
+    color: Color.fromARGB(255, 255, 251, 251),
+  ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
@@ -84,8 +89,11 @@ static const Color _brightTeal = Color(0xFF2DD4BF);
           primary: _brightTeal,
           surface: const Color(0xFF1E1E1E),
         ),
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
         cardColor: const Color(0xFF1E1E1E),
+         bottomAppBarTheme: const BottomAppBarThemeData(
+    color: Color.fromARGB(255, 29, 29, 29),
+  ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromARGB(255, 0, 0, 0), 
           foregroundColor: Colors.white,

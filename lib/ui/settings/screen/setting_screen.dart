@@ -8,7 +8,6 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -19,15 +18,14 @@ class SettingsScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-     backgroundColor: Theme.of(context).brightness == Brightness.dark
-      ? Colors.black
-      : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.black
+          : Colors.white,
       appBar: AppBar(title: const Text("Settings")),
-      
+
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          
           // ✅ 1. NEW PROFILE SECTION
           const _SectionHeader(title: "Account"),
           _buildProfileSection(context, auth),
@@ -80,19 +78,29 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.star_rate),
             title: const Text("Rate Us"),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Thanks for 5 stars! ⭐"))),
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Thanks for 5 stars! ⭐")),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.email),
             title: const Text("Contact Us"),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Contact support@billbuddy.com"))),
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Contact support@billbuddy.com")),
+            ),
           ),
           const Divider(),
 
           // 6. LOGOUT (Moved below profile for better UX)
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),
-            title: const Text("Log Out", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+            title: const Text(
+              "Log Out",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             onTap: () => _confirmLogout(context, auth),
           ),
         ],
@@ -100,50 +108,42 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-
-  Widget _buildProfileSection(BuildContext context, AuthService auth) {
+Widget _buildProfileSection(BuildContext context, AuthService auth) {
     final user = auth.currentUser;
     final cardColor = Theme.of(context).cardColor;
-final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currency = Provider.of<SettingsViewModel>(context).currencySymbol;
+    final primaryColor = Theme.of(context).primaryColor;
+
     if (user == null) return const SizedBox.shrink();
 
-    // Use FutureBuilder to load user profile
-    return FutureBuilder<UserProfile?>(
-      // ⚠️ Note: We are cheating slightly here by using a Future as a Stream 
-      // or just re-triggering setState. ideally database should return Stream.
-      // For now, FutureBuilder is fine, but we need to refresh it.
-      future: database.getUserProfile(user.uid), 
+    // ✅ FETCH PROFILE & TOTAL SPEND
+    return FutureBuilder(
+      future: Future.wait([
+        database.getUserProfile(user.uid),     // 0: Profile
+        database.getTotalSpend()               // 1: Total Lifetime Spend (You need to add this method to database.dart, see below)
+      ]),
       builder: (context, snapshot) {
-        // If loading, show spinner
         if (snapshot.connectionState == ConnectionState.waiting) {
            return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
         }
 
-        final profile = snapshot.data;
-        // Logic: Try DB name -> Try Google Name -> Default "User"
-        final name = (profile?.name != null && profile!.name.isNotEmpty) 
-            ? profile.name 
-            : (user.displayName ?? "User");
-            
+        final profile = snapshot.data?[0] as UserProfile?;
+        final totalLifetimeSpend = snapshot.data?[1] as double? ?? 0.0;
+
+        final name = (profile?.name != null && profile!.name.isNotEmpty) ? profile.name : (user.displayName ?? "User");
         final email = profile?.email ?? user.email ?? "No Email";
-        final age = profile?.age ?? 0;
 
         return InkWell(
-          // ✅ CLICK TO EDIT
           onTap: () async {
-            // Navigate to Edit Screen
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
-            );
-            // Trigger rebuild to show new data
+            await Navigator.push(context, MaterialPageRoute(builder: (context) => const EditProfileScreen()));
             (context as Element).markNeedsBuild(); 
           },
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: cardColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
               ],
@@ -152,56 +152,39 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
               children: [
                 // Avatar
                 CircleAvatar(
-  radius: 30,
-  // Dark Mode: Solid Teal BG | Light Mode: Light Teal BG
-  backgroundColor: isDark 
-      ? Theme.of(context).primaryColor 
-      : Theme.of(context).primaryColor.withOpacity(0.1),
-  child: Text(
-    name.isNotEmpty ? name[0].toUpperCase() : "U",
-    // ✅ FIX: White Text in Dark Mode, Teal Text in Light Mode
-    style: TextStyle(
-      fontSize: 24, 
-      fontWeight: FontWeight.bold, 
-      color: isDark ? Colors.white : Theme.of(context).primaryColor
-    ),
-  ),
-),
-                const SizedBox(width: 16),
+                  radius: 32,
+                  backgroundColor: isDark ? primaryColor : primaryColor.withOpacity(0.1),
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : "U",
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: isDark ? Colors.white : primaryColor),
+                  ),
+                ),
+                const SizedBox(width: 20),
                 
-                // Text Details
+                // Details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        name,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        email,
-                        style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodySmall?.color),
-                      ),
-                      // ✅ SHOW AGE
-                      if (age > 0) ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8)
-                          ),
-                          child: Text(
-                            "$age years old",
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                          ),
+                      Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(email, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                      const SizedBox(height: 12),
+                      
+                      // ✅ LIFETIME SPEND BADGE
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12)
                         ),
-                      ]
+                        child: Text(
+                          "Total Spent: $currency${totalLifetimeSpend.toStringAsFixed(0)}",
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                // Edit Icon
                 const Icon(Icons.edit_outlined, color: Colors.grey),
               ],
             ),
@@ -219,7 +202,10 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
         title: const Text("Log Out"),
         content: const Text("Are you sure you want to log out?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -228,19 +214,22 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false, 
+                  (route) => false,
                 );
               }
             },
-            
-            child: const Text("Log Out", style: TextStyle(color: Colors.redAccent)),
+
+            child: const Text(
+              "Log Out",
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
     );
   }
 
- void _showTagsDialog(BuildContext context) {
+  void _showTagsDialog(BuildContext context) {
     final textController = TextEditingController();
     showDialog(
       context: context,
@@ -265,11 +254,20 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
                         return ListTile(
                           dense: true,
                           // ✅ SHOW ASSET ICON
-                          leading: CategoryStyleHelper.getTagIcon(tag.name, size: 24),
+                          leading: CategoryStyleHelper.getTagIcon(
+                            tag.name,
+                            size: 24,
+                          ),
                           title: Text(tag.name),
-                          trailing: tag.isCustom 
-                             ? IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => database.deleteTag(tag.name))
-                             : null, 
+                          trailing: tag.isCustom
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => database.deleteTag(tag.name),
+                                )
+                              : null,
                         );
                       },
                     );
@@ -279,32 +277,51 @@ final isDark = Theme.of(context).brightness == Brightness.dark;
               const SizedBox(height: 10),
               TextField(
                 controller: textController,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 decoration: InputDecoration(
                   labelText: "New Tag Name",
-                  labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).dividerColor)),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).primaryColor)),
+                  labelStyle: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Close")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Close"),
+          ),
           ElevatedButton(
             onPressed: () {
               if (textController.text.isNotEmpty) {
-                database.insertTag(TagsCompanion(
-                  name: drift.Value(textController.text.trim()),
-                  isCustom: const drift.Value(true),
-                  color: const drift.Value(0xFF607D8B),
-                ));
+                database.insertTag(
+                  TagsCompanion(
+                    name: drift.Value(textController.text.trim()),
+                    isCustom: const drift.Value(true),
+                    color: const drift.Value(0xFF607D8B),
+                  ),
+                );
                 textController.clear();
               }
             },
             child: const Text("Add"),
-          )
+          ),
         ],
       ),
     );
@@ -318,13 +335,19 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerColor = isDark ? const Color(0xFF2DD4BF) : Theme.of(context).primaryColor;
+    final headerColor = isDark
+        ? const Color(0xFF2DD4BF)
+        : Theme.of(context).primaryColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
-        title, 
-        style: TextStyle(color: headerColor, fontWeight: FontWeight.bold, fontSize: 14)
+        title,
+        style: TextStyle(
+          color: headerColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
       ),
     );
   }

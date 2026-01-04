@@ -1126,8 +1126,17 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _emojiMeta = const VerificationMeta('emoji');
   @override
-  List<GeneratedColumn> get $columns => [name, color, isCustom];
+  late final GeneratedColumn<String> emoji = GeneratedColumn<String>(
+    'emoji',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [name, color, isCustom, emoji];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1160,6 +1169,12 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         isCustom.isAcceptableOrUnknown(data['is_custom']!, _isCustomMeta),
       );
     }
+    if (data.containsKey('emoji')) {
+      context.handle(
+        _emojiMeta,
+        emoji.isAcceptableOrUnknown(data['emoji']!, _emojiMeta),
+      );
+    }
     return context;
   }
 
@@ -1181,6 +1196,10 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_custom'],
       )!,
+      emoji: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}emoji'],
+      ),
     );
   }
 
@@ -1194,7 +1213,13 @@ class Tag extends DataClass implements Insertable<Tag> {
   final String name;
   final int? color;
   final bool isCustom;
-  const Tag({required this.name, this.color, required this.isCustom});
+  final String? emoji;
+  const Tag({
+    required this.name,
+    this.color,
+    required this.isCustom,
+    this.emoji,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1203,6 +1228,9 @@ class Tag extends DataClass implements Insertable<Tag> {
       map['color'] = Variable<int>(color);
     }
     map['is_custom'] = Variable<bool>(isCustom);
+    if (!nullToAbsent || emoji != null) {
+      map['emoji'] = Variable<String>(emoji);
+    }
     return map;
   }
 
@@ -1213,6 +1241,9 @@ class Tag extends DataClass implements Insertable<Tag> {
           ? const Value.absent()
           : Value(color),
       isCustom: Value(isCustom),
+      emoji: emoji == null && nullToAbsent
+          ? const Value.absent()
+          : Value(emoji),
     );
   }
 
@@ -1225,6 +1256,7 @@ class Tag extends DataClass implements Insertable<Tag> {
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int?>(json['color']),
       isCustom: serializer.fromJson<bool>(json['isCustom']),
+      emoji: serializer.fromJson<String?>(json['emoji']),
     );
   }
   @override
@@ -1234,6 +1266,7 @@ class Tag extends DataClass implements Insertable<Tag> {
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int?>(color),
       'isCustom': serializer.toJson<bool>(isCustom),
+      'emoji': serializer.toJson<String?>(emoji),
     };
   }
 
@@ -1241,16 +1274,19 @@ class Tag extends DataClass implements Insertable<Tag> {
     String? name,
     Value<int?> color = const Value.absent(),
     bool? isCustom,
+    Value<String?> emoji = const Value.absent(),
   }) => Tag(
     name: name ?? this.name,
     color: color.present ? color.value : this.color,
     isCustom: isCustom ?? this.isCustom,
+    emoji: emoji.present ? emoji.value : this.emoji,
   );
   Tag copyWithCompanion(TagsCompanion data) {
     return Tag(
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
       isCustom: data.isCustom.present ? data.isCustom.value : this.isCustom,
+      emoji: data.emoji.present ? data.emoji.value : this.emoji,
     );
   }
 
@@ -1259,49 +1295,56 @@ class Tag extends DataClass implements Insertable<Tag> {
     return (StringBuffer('Tag(')
           ..write('name: $name, ')
           ..write('color: $color, ')
-          ..write('isCustom: $isCustom')
+          ..write('isCustom: $isCustom, ')
+          ..write('emoji: $emoji')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(name, color, isCustom);
+  int get hashCode => Object.hash(name, color, isCustom, emoji);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Tag &&
           other.name == this.name &&
           other.color == this.color &&
-          other.isCustom == this.isCustom);
+          other.isCustom == this.isCustom &&
+          other.emoji == this.emoji);
 }
 
 class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<String> name;
   final Value<int?> color;
   final Value<bool> isCustom;
+  final Value<String?> emoji;
   final Value<int> rowid;
   const TagsCompanion({
     this.name = const Value.absent(),
     this.color = const Value.absent(),
     this.isCustom = const Value.absent(),
+    this.emoji = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TagsCompanion.insert({
     required String name,
     this.color = const Value.absent(),
     this.isCustom = const Value.absent(),
+    this.emoji = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : name = Value(name);
   static Insertable<Tag> custom({
     Expression<String>? name,
     Expression<int>? color,
     Expression<bool>? isCustom,
+    Expression<String>? emoji,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
       if (color != null) 'color': color,
       if (isCustom != null) 'is_custom': isCustom,
+      if (emoji != null) 'emoji': emoji,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1310,12 +1353,14 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Value<String>? name,
     Value<int?>? color,
     Value<bool>? isCustom,
+    Value<String?>? emoji,
     Value<int>? rowid,
   }) {
     return TagsCompanion(
       name: name ?? this.name,
       color: color ?? this.color,
       isCustom: isCustom ?? this.isCustom,
+      emoji: emoji ?? this.emoji,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1332,6 +1377,9 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     if (isCustom.present) {
       map['is_custom'] = Variable<bool>(isCustom.value);
     }
+    if (emoji.present) {
+      map['emoji'] = Variable<String>(emoji.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1344,7 +1392,252 @@ class TagsCompanion extends UpdateCompanion<Tag> {
           ..write('name: $name, ')
           ..write('color: $color, ')
           ..write('isCustom: $isCustom, ')
+          ..write('emoji: $emoji, ')
           ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BudgetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _limitMeta = const VerificationMeta('limit');
+  @override
+  late final GeneratedColumn<double> limit = GeneratedColumn<double>(
+    'limit',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, category, limit];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'budgets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Budget> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('limit')) {
+      context.handle(
+        _limitMeta,
+        limit.isAcceptableOrUnknown(data['limit']!, _limitMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_limitMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Budget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Budget(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      limit: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}limit'],
+      )!,
+    );
+  }
+
+  @override
+  $BudgetsTable createAlias(String alias) {
+    return $BudgetsTable(attachedDatabase, alias);
+  }
+}
+
+class Budget extends DataClass implements Insertable<Budget> {
+  final int id;
+  final String category;
+  final double limit;
+  const Budget({required this.id, required this.category, required this.limit});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['category'] = Variable<String>(category);
+    map['limit'] = Variable<double>(limit);
+    return map;
+  }
+
+  BudgetsCompanion toCompanion(bool nullToAbsent) {
+    return BudgetsCompanion(
+      id: Value(id),
+      category: Value(category),
+      limit: Value(limit),
+    );
+  }
+
+  factory Budget.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Budget(
+      id: serializer.fromJson<int>(json['id']),
+      category: serializer.fromJson<String>(json['category']),
+      limit: serializer.fromJson<double>(json['limit']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'category': serializer.toJson<String>(category),
+      'limit': serializer.toJson<double>(limit),
+    };
+  }
+
+  Budget copyWith({int? id, String? category, double? limit}) => Budget(
+    id: id ?? this.id,
+    category: category ?? this.category,
+    limit: limit ?? this.limit,
+  );
+  Budget copyWithCompanion(BudgetsCompanion data) {
+    return Budget(
+      id: data.id.present ? data.id.value : this.id,
+      category: data.category.present ? data.category.value : this.category,
+      limit: data.limit.present ? data.limit.value : this.limit,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Budget(')
+          ..write('id: $id, ')
+          ..write('category: $category, ')
+          ..write('limit: $limit')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, category, limit);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Budget &&
+          other.id == this.id &&
+          other.category == this.category &&
+          other.limit == this.limit);
+}
+
+class BudgetsCompanion extends UpdateCompanion<Budget> {
+  final Value<int> id;
+  final Value<String> category;
+  final Value<double> limit;
+  const BudgetsCompanion({
+    this.id = const Value.absent(),
+    this.category = const Value.absent(),
+    this.limit = const Value.absent(),
+  });
+  BudgetsCompanion.insert({
+    this.id = const Value.absent(),
+    required String category,
+    required double limit,
+  }) : category = Value(category),
+       limit = Value(limit);
+  static Insertable<Budget> custom({
+    Expression<int>? id,
+    Expression<String>? category,
+    Expression<double>? limit,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (category != null) 'category': category,
+      if (limit != null) 'limit': limit,
+    });
+  }
+
+  BudgetsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? category,
+    Value<double>? limit,
+  }) {
+    return BudgetsCompanion(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      limit: limit ?? this.limit,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (limit.present) {
+      map['limit'] = Variable<double>(limit.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BudgetsCompanion(')
+          ..write('id: $id, ')
+          ..write('category: $category, ')
+          ..write('limit: $limit')
           ..write(')'))
         .toString();
   }
@@ -1357,6 +1650,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExpenseItemsTable expenseItems = $ExpenseItemsTable(this);
   late final $UserProfilesTable userProfiles = $UserProfilesTable(this);
   late final $TagsTable tags = $TagsTable(this);
+  late final $BudgetsTable budgets = $BudgetsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1366,6 +1660,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     expenseItems,
     userProfiles,
     tags,
+    budgets,
   ];
 }
 
@@ -2200,6 +2495,7 @@ typedef $$TagsTableCreateCompanionBuilder =
       required String name,
       Value<int?> color,
       Value<bool> isCustom,
+      Value<String?> emoji,
       Value<int> rowid,
     });
 typedef $$TagsTableUpdateCompanionBuilder =
@@ -2207,6 +2503,7 @@ typedef $$TagsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<int?> color,
       Value<bool> isCustom,
+      Value<String?> emoji,
       Value<int> rowid,
     });
 
@@ -2230,6 +2527,11 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
 
   ColumnFilters<bool> get isCustom => $composableBuilder(
     column: $table.isCustom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get emoji => $composableBuilder(
+    column: $table.emoji,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2256,6 +2558,11 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     column: $table.isCustom,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get emoji => $composableBuilder(
+    column: $table.emoji,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TagsTableAnnotationComposer
@@ -2275,6 +2582,9 @@ class $$TagsTableAnnotationComposer
 
   GeneratedColumn<bool> get isCustom =>
       $composableBuilder(column: $table.isCustom, builder: (column) => column);
+
+  GeneratedColumn<String> get emoji =>
+      $composableBuilder(column: $table.emoji, builder: (column) => column);
 }
 
 class $$TagsTableTableManager
@@ -2308,11 +2618,13 @@ class $$TagsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<int?> color = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
+                Value<String?> emoji = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TagsCompanion(
                 name: name,
                 color: color,
                 isCustom: isCustom,
+                emoji: emoji,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2320,11 +2632,13 @@ class $$TagsTableTableManager
                 required String name,
                 Value<int?> color = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
+                Value<String?> emoji = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TagsCompanion.insert(
                 name: name,
                 color: color,
                 isCustom: isCustom,
+                emoji: emoji,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2349,6 +2663,152 @@ typedef $$TagsTableProcessedTableManager =
       Tag,
       PrefetchHooks Function()
     >;
+typedef $$BudgetsTableCreateCompanionBuilder =
+    BudgetsCompanion Function({
+      Value<int> id,
+      required String category,
+      required double limit,
+    });
+typedef $$BudgetsTableUpdateCompanionBuilder =
+    BudgetsCompanion Function({
+      Value<int> id,
+      Value<String> category,
+      Value<double> limit,
+    });
+
+class $$BudgetsTableFilterComposer
+    extends Composer<_$AppDatabase, $BudgetsTable> {
+  $$BudgetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get limit => $composableBuilder(
+    column: $table.limit,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BudgetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $BudgetsTable> {
+  $$BudgetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get limit => $composableBuilder(
+    column: $table.limit,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BudgetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BudgetsTable> {
+  $$BudgetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<double> get limit =>
+      $composableBuilder(column: $table.limit, builder: (column) => column);
+}
+
+class $$BudgetsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BudgetsTable,
+          Budget,
+          $$BudgetsTableFilterComposer,
+          $$BudgetsTableOrderingComposer,
+          $$BudgetsTableAnnotationComposer,
+          $$BudgetsTableCreateCompanionBuilder,
+          $$BudgetsTableUpdateCompanionBuilder,
+          (Budget, BaseReferences<_$AppDatabase, $BudgetsTable, Budget>),
+          Budget,
+          PrefetchHooks Function()
+        > {
+  $$BudgetsTableTableManager(_$AppDatabase db, $BudgetsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BudgetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BudgetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BudgetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<double> limit = const Value.absent(),
+              }) => BudgetsCompanion(id: id, category: category, limit: limit),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String category,
+                required double limit,
+              }) => BudgetsCompanion.insert(
+                id: id,
+                category: category,
+                limit: limit,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BudgetsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BudgetsTable,
+      Budget,
+      $$BudgetsTableFilterComposer,
+      $$BudgetsTableOrderingComposer,
+      $$BudgetsTableAnnotationComposer,
+      $$BudgetsTableCreateCompanionBuilder,
+      $$BudgetsTableUpdateCompanionBuilder,
+      (Budget, BaseReferences<_$AppDatabase, $BudgetsTable, Budget>),
+      Budget,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2360,4 +2820,6 @@ class $AppDatabaseManager {
   $$UserProfilesTableTableManager get userProfiles =>
       $$UserProfilesTableTableManager(_db, _db.userProfiles);
   $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
+  $$BudgetsTableTableManager get budgets =>
+      $$BudgetsTableTableManager(_db, _db.budgets);
 }

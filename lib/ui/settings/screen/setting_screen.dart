@@ -1,5 +1,6 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
+import 'package:bill_buddy/ui/budget/budget_screen.dart';
 import 'package:bill_buddy/ui/login/login_screen.dart';
 import 'package:bill_buddy/ui/settings/screen/edit_profile_screen.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
@@ -64,8 +65,24 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
+          
 
-          // 4. TAGS
+          // 4. BUDGETS & TAGS (Grouped)
+          const _SectionHeader(title: "Management"),
+          
+          // ✅ NEW: MANAGE BUDGETS BUTTON
+          ListTile(
+            leading: const Icon(Icons.pie_chart_outline), 
+            title: const Text("Monthly Budgets"),
+            subtitle: const Text("Set spending limits"),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+               // Navigate to Budget Screen
+               Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
+            },
+          ),
+
+          // 5. TAGS
           const _SectionHeader(title: "Tags & Categories"),
           ListTile(
             leading: const Icon(Icons.label),
@@ -75,7 +92,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // 5. HELP
+          // 6. HELP
          const _SectionHeader(title: "Help Center"),
           ListTile(
             leading: const Icon(Icons.star_rate),
@@ -92,7 +109,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // 6. LOGOUT
+          // 7. LOGOUT
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),
             title: const Text(

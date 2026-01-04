@@ -1261,7 +1261,6 @@
 //     return score.clamp(0.0, 1.0);
 //   }
 // }
-import 'package:intl/intl.dart';
 
 // ==================== DATA MODELS ====================
 class ReceiptData {

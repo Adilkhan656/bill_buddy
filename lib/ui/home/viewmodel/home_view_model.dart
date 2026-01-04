@@ -73,7 +73,7 @@ import 'package:intl/intl.dart';
 import '../../../data/local/database.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  Map<String, double> _categoryData = {};
+  final Map<String, double> _categoryData = {};
   double _totalSpend = 0;
   double _weeklySpend = 0;
   double _dailyAverage = 0;

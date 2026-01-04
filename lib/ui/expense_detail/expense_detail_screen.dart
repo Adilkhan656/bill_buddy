@@ -163,13 +163,46 @@ class ExpenseDetailScreen extends StatelessWidget {
                   const SizedBox(height: 40),
 
                   // 5. DELETE BUTTON (Clean Text Button)
+  // 5. DELETE BUTTON (With Confirmation)
                   Center(
                     child: TextButton(
                       onPressed: () {
-                         database.deleteExpense(expense.id);
-                         Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text("Delete Transaction?"),
+                            content: const Text("Are you sure you want to delete this expense? This action cannot be undone."),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            actions: [
+                              // Cancel Button
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+                              ),
+                              // Confirm Delete Button
+                              TextButton(
+                                onPressed: () async {
+                                  // 1. Close the Dialog first
+                                  Navigator.pop(ctx); 
+                                  
+                                  // 2. Perform the Delete
+                                  await database.deleteExpense(expense.id); 
+                                  
+                                  // 3. Close the Detail Screen
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                child: const Text("Delete", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
                       },
-                      child: const Text("Delete Transaction", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        "Delete Transaction", 
+                        style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),

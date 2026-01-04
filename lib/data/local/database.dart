@@ -132,7 +132,15 @@ class AppDatabase extends _$AppDatabase {
     return result.fold<double>(0.0, (sum, item) => sum + item.amount);
   }
 
-  Future<int> deleteExpense(int id) => (delete(expenses)..where((t) => t.id.equals(id))).go();
+ Future<void> deleteExpense(int id) {
+    return transaction(() async {
+      // 1. Delete all items belonging to this expense
+      await (delete(expenseItems)..where((t) => t.expenseId.equals(id))).go();
+      
+      // 2. Delete the expense itself
+      await (delete(expenses)..where((t) => t.id.equals(id))).go();
+    });
+  }
   Future<int> insertExpense(ExpensesCompanion entry) => into(expenses).insert(entry);
   
   // Get Items for Detail Screen
@@ -143,6 +151,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> insertExpenseItems(List<ExpenseItemsCompanion> items) async {
     await batch((batch) { batch.insertAll(expenseItems, items); });
   }
+
 
   // --- USER PROFILES ---
   Future<int> saveUserProfile(UserProfilesCompanion entry) => into(userProfiles).insertOnConflictUpdate(entry);

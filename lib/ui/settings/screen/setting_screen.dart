@@ -7,6 +7,7 @@ import 'package:bill_buddy/util/category_style_helper.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -47,6 +48,7 @@ class SettingsScreen extends StatelessWidget {
             leading: const Icon(Icons.attach_money),
             title: const Text("Currency"),
             trailing: DropdownButton<String>(
+              borderRadius: BorderRadius.circular(12),
               value: settings.currencySymbol,
               underline: Container(),
               dropdownColor: Theme.of(context).cardColor,
@@ -74,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
 
           // 5. HELP
-          const _SectionHeader(title: "Help Center"),
+         const _SectionHeader(title: "Help Center"),
           ListTile(
             leading: const Icon(Icons.star_rate),
             title: const Text("Rate Us"),
@@ -85,13 +87,12 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.email),
             title: const Text("Contact Us"),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Contact support@billbuddy.com")),
-            ),
+            // ✅ UPDATED: Launches Email App
+            onTap: () => _launchEmail(),
           ),
           const Divider(),
 
-          // 6. LOGOUT (Moved below profile for better UX)
+          // 6. LOGOUT
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),
             title: const Text(
@@ -108,6 +109,32 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  // ✅ NEW: Logic to open Email App
+  Future<void> _launchEmail() async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'adilrazakhan158@gmail.com',
+      query: _encodeQueryParameters(<String, String>{
+        'subject': 'Support Request - Bill Buddy',
+        'body': 'Hello Bill Buddy Support,\n\nI am writing to you regarding...',
+      }),
+    );
+
+    try {
+      if (!await launchUrl(emailLaunchUri)) {
+        throw Exception('Could not launch email');
+      }
+    } catch (e) {
+      // Fallback if no email app is installed
+      debugPrint("Error launching email: $e");
+    }
+  }
+
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
 Widget _buildProfileSection(BuildContext context, AuthService auth) {
     final user = auth.currentUser;
     final cardColor = Theme.of(context).cardColor;
@@ -174,13 +201,18 @@ Widget _buildProfileSection(BuildContext context, AuthService auth) {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: isDark ? const Color(0xFF2DD4BF).withOpacity(0.2) : primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12)
                         ),
                         child: Text(
-                          "Total Spent: $currency${totalLifetimeSpend.toStringAsFixed(0)}",
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor),
-                        ),
+  "Total Spent: $currency${totalLifetimeSpend.toStringAsFixed(0)}",
+  style: TextStyle(
+    fontSize: 12, 
+    fontWeight: FontWeight.bold, 
+    // ✅ FIX: Use Bright Teal in Dark Mode, Dark Teal in Light Mode
+    color: isDark ? const Color(0xFF2DD4BF) : primaryColor, 
+  ),
+),
                       ),
                     ],
                   ),

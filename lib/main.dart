@@ -108,7 +108,6 @@ static const Color _brightTeal = Color(0xFF2DD4BF);
   }
 }
 
-// Keep AuthWrapper for later internal navigation use if needed
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 

@@ -25,6 +25,18 @@
 // class _DashboardCardState extends State<DashboardCard> {
 //   int touchedIndex = -1;
 
+//   // ✅ 1. Define colors once to ensure consistency
+//   final List<Color> _chartColors = const [
+//     Color(0xFF0F766E), // Deep Teal
+//     Colors.orangeAccent, 
+//     Colors.blueAccent, 
+//     Colors.purpleAccent, 
+//     Colors.redAccent, 
+//     Colors.teal,
+//     Colors.pinkAccent,
+//     Colors.amber,
+//   ];
+
 //   @override
 //   Widget build(BuildContext context) {
 //     final currency = Provider.of<SettingsViewModel>(context).currencySymbol;
@@ -36,6 +48,11 @@
 //     String periodLabel = isAllTime
 //         ? "All Time" 
 //         : DateFormat('MMMM yyyy').format(widget.selectedDate!);
+
+//     // ✅ 2. PREPARE SORTED DATA HERE
+//     // We sort the data once, so both Chart and Legend use the exact same order.
+//     var sortedEntries = widget.viewModel.categoryData.entries.toList()
+//       ..sort((a, b) => b.value.compareTo(a.value));
 
 //     return Container(
 //       margin: const EdgeInsets.all(16),
@@ -55,29 +72,29 @@
 //         crossAxisAlignment: CrossAxisAlignment.start,
 //         children: [
 //           // --------------------------------------------
-//           // 1. HEADER (Navigation + All Time Toggle)
+//           // HEADER (Navigation + All Time Toggle)
 //           // --------------------------------------------
 //           Row(
 //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //             children: [
-//               // Left: Month Navigation (Hidden if All Time)
 //               if (!isAllTime)
 //                 IconButton(
 //                   padding: EdgeInsets.zero,
 //                   constraints: const BoxConstraints(),
 //                   icon: Icon(Icons.chevron_left_rounded, color: subTextColor, size: 24),
 //                   onPressed: () {
-//                     widget.onDateChanged(DateTime(
-//                       widget.selectedDate!.year, 
-//                       widget.selectedDate!.month - 1, 
-//                       1
-//                     ));
+//                     if (widget.selectedDate != null) {
+//                       widget.onDateChanged(DateTime(
+//                         widget.selectedDate!.year, 
+//                         widget.selectedDate!.month - 1, 
+//                         1
+//                       ));
+//                     }
 //                   },
 //                 )
 //               else 
 //                 const SizedBox(width: 24),
 
-//               // Center: Title
 //               Column(
 //                 children: [
 //                   Text(
@@ -88,7 +105,6 @@
 //                       color: textColor
 //                     ),
 //                   ),
-//                   // All Time Toggle Switch
 //                   InkWell(
 //                     onTap: () {
 //                       if (isAllTime) {
@@ -102,10 +118,10 @@
 //                       margin: const EdgeInsets.only(top: 3),
 //                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
 //                       decoration: BoxDecoration(
-//                         color: isAllTime ? Color.fromARGB(255, 13, 152, 1).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+//                         color: isAllTime ? const Color.fromARGB(255, 13, 152, 1).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
 //                         borderRadius: BorderRadius.circular(10),
 //                         border: Border.all(
-//                           color: isAllTime ? Color.fromARGB(255, 13, 152, 1).withOpacity(0.3) : Colors.transparent
+//                           color: isAllTime ? const Color.fromARGB(255, 13, 152, 1).withOpacity(0.3) : Colors.transparent
 //                         )
 //                       ),
 //                       child: Row(
@@ -114,7 +130,7 @@
 //                           Icon(
 //                             isAllTime ? Icons.check_circle_rounded : Icons.circle_outlined,
 //                             size: 11,
-//                             color: isAllTime ? Color.fromARGB(255, 13, 152, 1) : subTextColor,
+//                             color: isAllTime ? const Color.fromARGB(255, 13, 152, 1) : subTextColor,
 //                           ),
 //                           const SizedBox(width: 3),
 //                           Text(
@@ -132,7 +148,6 @@
 //                 ],
 //               ),
 
-//               // Right: Month Navigation
 //               if (!isAllTime)
 //                 IconButton(
 //                   padding: EdgeInsets.zero,
@@ -143,11 +158,13 @@
 //                     size: 24
 //                   ),
 //                   onPressed: _isCurrentMonth(widget.selectedDate) ? null : () {
-//                     widget.onDateChanged(DateTime(
-//                       widget.selectedDate!.year, 
-//                       widget.selectedDate!.month + 1, 
-//                       1
-//                     ));
+//                     if (widget.selectedDate != null) {
+//                       widget.onDateChanged(DateTime(
+//                         widget.selectedDate!.year, 
+//                         widget.selectedDate!.month + 1, 
+//                         1
+//                       ));
+//                     }
 //                   },
 //                 )
 //               else 
@@ -158,7 +175,7 @@
 //           const SizedBox(height: 1),
 
 //           // --------------------------------------------
-//           // 2. TOTAL SPENDING DISPLAY
+//           // TOTAL SPENDING DISPLAY
 //           // --------------------------------------------
 //           Center(
 //             child: Column(
@@ -188,7 +205,7 @@
 //           const SizedBox(height: 10),
 
 //           // --------------------------------------------
-//           // 3. CHART AND STATS ROW
+//           // CHART AND STATS ROW
 //           // --------------------------------------------
 //           Row(
 //             crossAxisAlignment: CrossAxisAlignment.center,
@@ -227,7 +244,8 @@
 //                             borderData: FlBorderData(show: false),
 //                             sectionsSpace: 4, 
 //                             centerSpaceRadius: 42,
-//                             sections: _buildAnimatedChartSections(context),
+//                             // ✅ Pass sorted entries here
+//                             sections: _buildAnimatedChartSections(context, sortedEntries), 
 //                           ),
 //                         ),
 //                 ),
@@ -263,7 +281,7 @@
 //           const SizedBox(height: 14),
 
 //           // --------------------------------------------
-//           // 4. CATEGORY BREAKDOWN LEGEND
+//           // CATEGORY BREAKDOWN LEGEND
 //           // --------------------------------------------
 //           Text(
 //             "Category Breakdown", 
@@ -282,27 +300,20 @@
 //             Wrap(
 //               spacing: 8,
 //               runSpacing: 4,
-//               children: _buildLegendItems(context),
+//               // ✅ Pass sorted entries here too
+//               children: _buildLegendItems(context, sortedEntries), 
 //             ),
 //         ],
 //       ),
 //     );
 //   }
 
-//   // Helper: Build Legend Items
-//   List<Widget> _buildLegendItems(BuildContext context) {
-//     if (widget.viewModel.categoryData.isEmpty) return [];
-
+//   // ✅ Updated: Accepts sorted entries to match chart colors
+//   List<Widget> _buildLegendItems(BuildContext context, List<MapEntry<String, double>> sortedEntries) {
 //     int index = 0;
-//     List<Color> colors = [
-//       const Color(0xFF0F766E), Colors.orangeAccent, Colors.blueAccent, Colors.purpleAccent, Colors.redAccent, Colors.teal
-//     ];
-
-//     var sortedEntries = widget.viewModel.categoryData.entries.toList()
-//       ..sort((a, b) => b.value.compareTo(a.value));
 
 //     return sortedEntries.take(6).map((entry) {
-//       final color = colors[index % colors.length];
+//       final color = _chartColors[index % _chartColors.length];
 //       final isTouched = index == touchedIndex;
 //       index++;
       
@@ -354,23 +365,19 @@
 //     );
 //   }
 
-//   // Helper: Animated Chart Sections
-//   List<PieChartSectionData> _buildAnimatedChartSections(BuildContext context) {
-//     if (widget.viewModel.categoryData.isEmpty) {
+//   // ✅ Updated: Accepts sorted entries
+//   List<PieChartSectionData> _buildAnimatedChartSections(BuildContext context, List<MapEntry<String, double>> sortedEntries) {
+//     if (sortedEntries.isEmpty) {
 //       return [PieChartSectionData(color: Colors.grey.withOpacity(0.1), value: 1, radius: 10, showTitle: false)];
 //     }
 
-//     List<Color> colors = [
-//       const Color(0xFF0F766E), Colors.orangeAccent, Colors.blueAccent, Colors.purpleAccent, Colors.redAccent, Colors.teal
-//     ];
-    
 //     int index = 0;
     
-//     return widget.viewModel.categoryData.entries.map((entry) {
+//     return sortedEntries.map((entry) {
 //       final isTouched = index == touchedIndex;
 //       final fontSize = isTouched ? 13.0 : 0.0;
 //       final radius = isTouched ? 42.0 : 32.0;
-//       final color = colors[index % colors.length];
+//       final color = _chartColors[index % _chartColors.length];
       
 //       final value = entry.value;
 //       final total = widget.viewModel.totalSpend;
@@ -394,7 +401,6 @@
 //     return date.year == now.year && date.month == now.month;
 //   }
 // }
-
 import 'package:bill_buddy/ui/home/viewmodel/home_view_model.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:bill_buddy/util/category_style_helper.dart';
@@ -422,7 +428,7 @@ class DashboardCard extends StatefulWidget {
 class _DashboardCardState extends State<DashboardCard> {
   int touchedIndex = -1;
 
-  // ✅ 1. Define colors once to ensure consistency
+  // 1. Define colors for consistent chart mapping
   final List<Color> _chartColors = const [
     Color(0xFF0F766E), // Deep Teal
     Colors.orangeAccent, 
@@ -442,12 +448,12 @@ class _DashboardCardState extends State<DashboardCard> {
     final subTextColor = textColor.withOpacity(0.6);
     final isAllTime = widget.selectedDate == null;
 
+    // Label for the top-right filter chip
     String periodLabel = isAllTime
         ? "All Time" 
         : DateFormat('MMMM yyyy').format(widget.selectedDate!);
 
-    // ✅ 2. PREPARE SORTED DATA HERE
-    // We sort the data once, so both Chart and Legend use the exact same order.
+    // 2. Sort data so Chart and Legend match colors
     var sortedEntries = widget.viewModel.categoryData.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -468,150 +474,116 @@ class _DashboardCardState extends State<DashboardCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          
           // --------------------------------------------
-          // HEADER (Navigation + All Time Toggle)
+          // HEADER ROW
+          // Left: Navigation Arrows (for months)
+          // Right: Filter Chip (All Time / Month Name)
           // --------------------------------------------
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Left: Month Navigation (Only show if NOT All Time)
               if (!isAllTime)
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(Icons.chevron_left_rounded, color: subTextColor, size: 24),
-                  onPressed: () {
-                    if (widget.selectedDate != null) {
-                      widget.onDateChanged(DateTime(
-                        widget.selectedDate!.year, 
-                        widget.selectedDate!.month - 1, 
-                        1
-                      ));
-                    }
-                  },
+                Row(
+                  children: [
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(Icons.chevron_left_rounded, color: subTextColor, size: 24),
+                      onPressed: () {
+                        if (widget.selectedDate != null) {
+                          widget.onDateChanged(DateTime(
+                            widget.selectedDate!.year, 
+                            widget.selectedDate!.month - 1, 
+                            1
+                          ));
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        Icons.chevron_right_rounded, 
+                        color: _isCurrentMonth(widget.selectedDate) ? Colors.transparent : subTextColor,
+                        size: 24
+                      ),
+                      onPressed: _isCurrentMonth(widget.selectedDate) ? null : () {
+                        if (widget.selectedDate != null) {
+                          widget.onDateChanged(DateTime(
+                            widget.selectedDate!.year, 
+                            widget.selectedDate!.month + 1, 
+                            1
+                          ));
+                        }
+                      },
+                    ),
+                  ],
                 )
               else 
-                const SizedBox(width: 24),
+                 // Empty spacer if All Time (to keep Right side aligned)
+                 const SizedBox(width: 48), 
 
-              Column(
-                children: [
-                  Text(
-                    periodLabel,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold, 
-                      fontSize: 15, 
-                      color: textColor
-                    ),
+              // Right: Filter Chip
+              InkWell(
+                onTap: () {
+                  // Toggle Logic: If All Time -> Switch to Now. If Month -> Switch to All Time.
+                  if (isAllTime) {
+                    widget.onDateChanged(DateTime.now());
+                  } else {
+                    widget.onDateChanged(null);
+                  }
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isAllTime ? const Color.fromARGB(255, 13, 152, 1).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isAllTime ? const Color.fromARGB(255, 13, 152, 1).withOpacity(0.3) : Colors.transparent
+                    )
                   ),
-                  InkWell(
-                    onTap: () {
-                      if (isAllTime) {
-                        widget.onDateChanged(DateTime.now());
-                      } else {
-                        widget.onDateChanged(null);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 3),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: isAllTime ? const Color.fromARGB(255, 13, 152, 1).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isAllTime ? const Color.fromARGB(255, 13, 152, 1).withOpacity(0.3) : Colors.transparent
-                        )
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isAllTime ? Icons.check_circle_rounded : Icons.calendar_month,
+                        size: 14,
+                        color: isAllTime ? const Color.fromARGB(255, 13, 152, 1) : subTextColor,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isAllTime ? Icons.check_circle_rounded : Icons.circle_outlined,
-                            size: 11,
-                            color: isAllTime ? const Color.fromARGB(255, 13, 152, 1) : subTextColor,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            "All Time",
-                            style: TextStyle(
-                              fontSize: 9, 
-                              fontWeight: FontWeight.bold,
-                              color: isAllTime ? const Color.fromARGB(255, 13, 152, 1) : subTextColor
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 6),
+                      Text(
+                        periodLabel,
+                        style: TextStyle(
+                          fontSize: 12, 
+                          fontWeight: FontWeight.bold,
+                          color: isAllTime ? const Color.fromARGB(255, 13, 152, 1) : subTextColor
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-
-              if (!isAllTime)
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.chevron_right_rounded, 
-                    color: _isCurrentMonth(widget.selectedDate) ? Colors.transparent : subTextColor,
-                    size: 24
-                  ),
-                  onPressed: _isCurrentMonth(widget.selectedDate) ? null : () {
-                    if (widget.selectedDate != null) {
-                      widget.onDateChanged(DateTime(
-                        widget.selectedDate!.year, 
-                        widget.selectedDate!.month + 1, 
-                        1
-                      ));
-                    }
-                  },
-                )
-              else 
-                const SizedBox(width: 24),
             ],
           ),
           
-          const SizedBox(height: 1),
+          const SizedBox(height: 20),
 
           // --------------------------------------------
-          // TOTAL SPENDING DISPLAY
-          // --------------------------------------------
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  isAllTime ? "Lifetime Total" : "Total Spent", 
-                  style: TextStyle(
-                    color: subTextColor, 
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500
-                  )
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  "$currency${widget.viewModel.totalSpend.toStringAsFixed(0)}", 
-                  style: TextStyle(
-                    color: textColor, 
-                    fontWeight: FontWeight.w900, 
-                    fontSize: 36, 
-                    letterSpacing: -1.5
-                  )
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // --------------------------------------------
-          // CHART AND STATS ROW
+          // MAIN CONTENT ROW
+          // Left: Chart | Right: Stats
           // --------------------------------------------
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Chart Area
+              // 1. LEFT: PIE CHART
               Expanded(
                 flex: 5,
                 child: SizedBox(
-                  height: 100,
+                  height: 140, // Increased height for better visibility
                   child: widget.viewModel.categoryData.isEmpty
                       ? Center(
                           child: Column(
@@ -640,32 +612,56 @@ class _DashboardCardState extends State<DashboardCard> {
                             ),
                             borderData: FlBorderData(show: false),
                             sectionsSpace: 4, 
-                            centerSpaceRadius: 42,
-                            // ✅ Pass sorted entries here
+                            centerSpaceRadius: 40, // Donut hole size
                             sections: _buildAnimatedChartSections(context, sortedEntries), 
                           ),
                         ),
                 ),
               ),
               
-              const SizedBox(width: 56),
+              const SizedBox(width: 20), // Spacing between Chart and Stats
 
-              // Stats Area
+              // 2. RIGHT: STATS COLUMN
               Expanded(
                 flex: 5,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start, // Align text to left
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Total Spent Header
+                    Text(
+                      isAllTime ? "Lifetime Total" : "Total Spent", 
+                      style: TextStyle(
+                        color: subTextColor, 
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500
+                      )
+                    ),
+                    Text(
+                      "$currency${widget.viewModel.totalSpend.toStringAsFixed(0)}", 
+                      style: TextStyle(
+                        color: textColor, 
+                        fontWeight: FontWeight.w900, 
+                        fontSize: 28, // Large Bold Font
+                        letterSpacing: -1.0
+                      )
+                    ),
+                    
+                    const SizedBox(height: 16), // Spacing
+                    
+                    // Detailed Stats
                     if (isAllTime) ...[
-                      _buildStatRow("Peak Month", widget.viewModel.highestSpendMonth, Colors.orangeAccent, textColor),
-                      const SizedBox(height: 10),
-                      _buildStatRow("Peak Amt", "$currency${widget.viewModel.highestSpendAmount.toStringAsFixed(0)}", Colors.redAccent, textColor),
-                      const SizedBox(height: 10),
-                      _buildStatRow("Daily Avg", "$currency${widget.viewModel.dailyAverage.toStringAsFixed(0)}", Colors.blueAccent, textColor),
+                      // All Time Stats
+                      _buildStatRowWithIcon(Icons.calendar_today, "Peak Month", widget.viewModel.highestSpendMonth, Colors.orangeAccent, textColor),
+                      const SizedBox(height: 8),
+                      _buildStatRowWithIcon(Icons.trending_up, "Peak Amt", "$currency${widget.viewModel.highestSpendAmount.toStringAsFixed(0)}", Colors.redAccent, textColor),
+                      const SizedBox(height: 8),
+                      _buildStatRowWithIcon(Icons.bar_chart, "Daily Avg", "$currency${widget.viewModel.dailyAverage.toStringAsFixed(0)}", Colors.blueAccent, textColor),
                     ] else ...[
-                      _buildStatRow("Weekly Avg", "$currency${widget.viewModel.weeklySpend.toStringAsFixed(0)}", Colors.blueAccent, textColor),
-                      const SizedBox(height: 10),
-                      _buildStatRow("Daily Avg", "$currency${widget.viewModel.dailyAverage.toStringAsFixed(0)}", Colors.greenAccent, textColor),
+                      // Monthly Stats
+                      _buildStatRowWithIcon(Icons.date_range, "Weekly Avg", "$currency${widget.viewModel.weeklySpend.toStringAsFixed(0)}", Colors.purpleAccent, textColor),
+                      const SizedBox(height: 8),
+                      _buildStatRowWithIcon(Icons.today, "Daily Avg", "$currency${widget.viewModel.dailyAverage.toStringAsFixed(0)}", Colors.blueAccent, textColor),
                     ]
                   ],
                 ),
@@ -673,12 +669,12 @@ class _DashboardCardState extends State<DashboardCard> {
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           Divider(color: Colors.grey.withOpacity(0.12), thickness: 1),
-          const SizedBox(height: 14),
+          const SizedBox(height: 15),
 
           // --------------------------------------------
-          // CATEGORY BREAKDOWN LEGEND
+          // BOTTOM: CATEGORY BREAKDOWN LEGEND
           // --------------------------------------------
           Text(
             "Category Breakdown", 
@@ -696,8 +692,7 @@ class _DashboardCardState extends State<DashboardCard> {
           else
             Wrap(
               spacing: 8,
-              runSpacing: 4,
-              // ✅ Pass sorted entries here too
+              runSpacing: 8,
               children: _buildLegendItems(context, sortedEntries), 
             ),
         ],
@@ -705,7 +700,24 @@ class _DashboardCardState extends State<DashboardCard> {
     );
   }
 
-  // ✅ Updated: Accepts sorted entries to match chart colors
+  // Helper: Stat Row with Icon (Design from your request image)
+  Widget _buildStatRowWithIcon(IconData icon, String label, String value, Color iconColor, Color textColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 14, color: iconColor), // Icon instead of dot
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 11, fontWeight: FontWeight.w500)),
+          ],
+        ),
+        Text(value, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 12)),
+      ],
+    );
+  }
+
+  // Helper: Build Legend Items
   List<Widget> _buildLegendItems(BuildContext context, List<MapEntry<String, double>> sortedEntries) {
     int index = 0;
 
@@ -715,7 +727,7 @@ class _DashboardCardState extends State<DashboardCard> {
       index++;
       
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(14),
@@ -727,10 +739,11 @@ class _DashboardCardState extends State<DashboardCard> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            CategoryStyleHelper.getTagIcon(entry.key, size: 13),
-            const SizedBox(width: 5),
+            // Updated to fetch Emoji if available (assuming StyleHelper supports it now)
+            CategoryStyleHelper.getTagIcon(entry.key, size: 14), 
+            const SizedBox(width: 6),
             Text(
               entry.key, 
               style: TextStyle(
@@ -745,24 +758,7 @@ class _DashboardCardState extends State<DashboardCard> {
     }).toList();
   }
 
-  // Helper: Stat Row
-  Widget _buildStatRow(String label, String value, Color dotColor, Color textColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(width: 6, height: 6, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
-            const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 10.5, fontWeight: FontWeight.w500)),
-          ],
-        ),
-        Text(value, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 11.5)),
-      ],
-    );
-  }
-
-  // ✅ Updated: Accepts sorted entries
+  // Helper: Build Pie Chart Sections
   List<PieChartSectionData> _buildAnimatedChartSections(BuildContext context, List<MapEntry<String, double>> sortedEntries) {
     if (sortedEntries.isEmpty) {
       return [PieChartSectionData(color: Colors.grey.withOpacity(0.1), value: 1, radius: 10, showTitle: false)];
@@ -772,8 +768,8 @@ class _DashboardCardState extends State<DashboardCard> {
     
     return sortedEntries.map((entry) {
       final isTouched = index == touchedIndex;
-      final fontSize = isTouched ? 13.0 : 0.0;
-      final radius = isTouched ? 42.0 : 32.0;
+      final fontSize = isTouched ? 14.0 : 0.0; // Hide text if not touched
+      final radius = isTouched ? 48.0 : 40.0; // Expand on touch
       final color = _chartColors[index % _chartColors.length];
       
       final value = entry.value;

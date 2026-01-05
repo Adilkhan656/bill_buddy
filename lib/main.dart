@@ -1,3 +1,4 @@
+import 'package:bill_buddy/data/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,11 +8,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'data/auth/auth_service.dart';
 import 'ui/settings/view_model/setting_view_model.dart';
 import 'ui/splash/splash_screen.dart';
-import 'ui/home/home_screen.dart'; // Make sure this path is correct for MainScreen
+import 'ui/home/screen/home_screen.dart'; // Make sure this path is correct for MainScreen
 import 'ui/login/login_screen.dart';
 
 void main() async {
   // ✅ 1. Wrap entire initialization in one Try-Catch block
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.scheduleMorningMotivation();
   try {
     WidgetsFlutterBinding.ensureInitialized();
     

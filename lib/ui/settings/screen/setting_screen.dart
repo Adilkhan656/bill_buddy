@@ -1,5 +1,6 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
+import 'package:bill_buddy/data/notification/notification_service.dart';
 import 'package:bill_buddy/ui/budget/budget_screen.dart';
 import 'package:bill_buddy/ui/login/login_screen.dart';
 import 'package:bill_buddy/ui/settings/screen/edit_profile_screen.dart';
@@ -81,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
                Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
             },
           ),
-
+ const Divider(),
           // 5. TAGS
           const _SectionHeader(title: "Tags & Categories"),
           ListTile(
@@ -108,7 +109,20 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _launchEmail(),
           ),
           const Divider(),
-
+ListTile(
+            leading: const Icon(Icons.notifications_active, color: Colors.orange),
+            title: const Text("Test Morning Notification"),
+            subtitle: const Text("Shows in 5 seconds (Close app to test)"),
+            onTap: () async {
+              // 1. Trigger the test
+              await NotificationService().testNotification();
+              
+              // 2. Show a toast/snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Wait 5 seconds... (Try locking screen)")),
+              );
+            },
+          ),
           // 7. LOGOUT
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),

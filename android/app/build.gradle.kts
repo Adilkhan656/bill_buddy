@@ -16,6 +16,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -45,6 +46,7 @@ dependencies {
     // Import the Firebase BoM (Bill of Materials)
     // I corrected your version "34.7.0" (which doesn't exist) to a valid recent one "33.7.0"
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     
     // Add the dependencies for the Firebase products you want to use
     implementation("com.google.firebase:firebase-analytics")

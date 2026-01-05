@@ -1,4 +1,5 @@
 import 'package:bill_buddy/data/local/database.dart';
+import 'package:bill_buddy/data/notification/notification_service.dart';
 import 'package:bill_buddy/ui/add_expense/view_model/add_expanse_view_model.dart';
 import 'package:bill_buddy/ui/add_expense/widget/expense_widget.dart'; // Import the new widgets
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
@@ -184,10 +185,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ]
                   ),
                   child: ElevatedButton(
-                    onPressed: () async {
-                      bool success = await _viewModel.saveExpense(context);
-                      if (success && context.mounted) Navigator.pop(context);
-                    },
+                   onPressed: () async {
+  // 1. Let your ViewModel handle the saving (Validation + DB Insert)
+  bool success = await _viewModel.saveExpense(context);
+
+  if (success) {
+    // ✅ 2. TRIGGER NOTIFICATION CHECK
+    // We wait for the save to finish so the new expense is in the DB
+    await NotificationService().checkBudgetAndNotify(database);
+
+    // 3. Close the screen
+    if (mounted) Navigator.pop(context);
+  }
+},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,

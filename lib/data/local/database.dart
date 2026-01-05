@@ -344,13 +344,21 @@ onUpgrade: (Migrator m, int from, int to) async {
   // ==========================================
   
   // Set or Update a Budget
-  Future<void> setBudget(String category, double limit) {
-    return into(budgets).insertOnConflictUpdate(
-      BudgetsCompanion(
-        category: Value(category),
-        limit: Value(limit),
-      ),
-    );
+Future<void> setBudget(String category, double limit) async {
+    // 1. Check if budget exists for this category
+    final existing = await (select(budgets)..where((t) => t.category.equals(category))).getSingleOrNull();
+    
+    if (existing != null) {
+      // 2. UPDATE if exists
+      await (update(budgets)..where((t) => t.category.equals(category))).write(
+        BudgetsCompanion(limit: Value(limit)),
+      );
+    } else {
+      // 3. INSERT if new
+      await into(budgets).insert(
+        BudgetsCompanion(category: Value(category), limit: Value(limit)),
+      );
+    }
   }
 
   // Watch all budgets

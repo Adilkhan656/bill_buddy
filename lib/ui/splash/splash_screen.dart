@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:bill_buddy/ui/home/home_screen.dart';
+import 'package:bill_buddy/ui/home/screen/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart'; // ✅ Import Lottie
 import 'package:shared_preferences/shared_preferences.dart';

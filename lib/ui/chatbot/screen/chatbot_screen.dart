@@ -32,7 +32,7 @@
 
 // }
 
-import 'package:bill_buddy/ui/chatbot/chat_service.dart';
+import 'package:bill_buddy/ui/chatbot/service/chat_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart'; // Optional: for nicer text
 
@@ -105,10 +105,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       backgroundColor: chatBgColor,
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.smart_toy_rounded, size: 20),
-            SizedBox(width: 8),
+             Image.asset(
+            'assets/images/aichatbot.gif',
+            width: 38,
+            height: 38,
+          ),
+            SizedBox(width: 2),
             Text("AI Assistant"),
           ],
         ),

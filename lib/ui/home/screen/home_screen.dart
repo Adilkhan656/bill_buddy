@@ -5,16 +5,16 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // Internal App Imports
-import '../../data/local/database.dart';
-import '../../data/auth/auth_service.dart';
-import '../../util/category_style_helper.dart';
-import '../add_expense/screen/add_expense_screen.dart';
+import '../../../data/local/database.dart';
+import '../../../data/auth/auth_service.dart';
+import '../../../util/category_style_helper.dart';
+import '../../add_expense/screen/add_expense_screen.dart';
 
-import '../home/viewmodel/home_view_model.dart';
-import '../home/widget/dashboard_card.dart';
-import '../settings/screen/setting_screen.dart';
-import '../settings/view_model/setting_view_model.dart';
-import '../chatbot/chatbot_screen.dart';
+import '../viewmodel/home_view_model.dart';
+import '../widget/dashboard_card.dart';
+import '../../settings/screen/setting_screen.dart';
+import '../../settings/view_model/setting_view_model.dart';
+import '../../chatbot/screen/chatbot_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -25,6 +25,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  final Set<String> _dismissedWarnings = {};
 
   // Dashboard Month
   DateTime? _dashboardMonth = DateTime.now();
@@ -40,7 +41,133 @@ class _MainScreenState extends State<MainScreen> {
 
   final HomeViewModel _viewModel = HomeViewModel();
   late Stream<List<Expense>> _expensesStream;
+// ---------------------------------------------------------------------------
+  // 🚨 SMART BUDGET ALERTS (70% Warning & 100% Critical)
+  // ---------------------------------------------------------------------------
+  Widget _buildBudgetWarning(List<Expense> allExpenses) {
+    return StreamBuilder<List<Budget>>(
+      stream: database.watchAllBudgets(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) return const SizedBox();
 
+        final budgets = snapshot.data!;
+        final now = DateTime.now();
+        final currency = Provider.of<SettingsViewModel>(context).currencySymbol;
+
+        // List to hold all active alerts
+        List<Widget> activeAlerts = [];
+
+        for (var budget in budgets) {
+          // Skip if user dismissed this specific alert
+          if (_dismissedWarnings.contains(budget.category)) continue;
+
+          // Calculate spend for this specific category & month
+          final spent = allExpenses
+              .where((e) =>
+                  e.category == budget.category &&
+                  e.date.month == now.month &&
+                  e.date.year == now.year)
+              .fold(0.0, (sum, item) => sum + item.amount);
+
+          double percentage = (spent / budget.limit);
+
+          // 🔴 CRITICAL ALERT (>= 100%)
+          if (percentage >= 1.0) {
+            activeAlerts.add(_buildAlertCard(
+              context: context,
+              category: budget.category,
+              message: "Over Budget! Limit exceeded.",
+              subMessage: "${budget.category}: $currency${spent.toStringAsFixed(0)} / $currency${budget.limit.toStringAsFixed(0)}",
+              color: Colors.redAccent,
+              icon: Icons.error_outline,
+            ));
+          } 
+          // 🟡 WARNING ALERT (>= 70%)
+          else if (percentage >= 0.7) {
+            activeAlerts.add(_buildAlertCard(
+              context: context,
+              category: budget.category,
+              message: "Approaching Limit (${(percentage * 100).toStringAsFixed(0)}%)",
+              subMessage: "You've used most of your ${budget.category} budget.",
+              color: Colors.orange,
+              icon: Icons.warning_amber_rounded,
+            ));
+          }
+        }
+
+        if (activeAlerts.isEmpty) return const SizedBox();
+
+        // Stack multiple alerts vertically
+        return Column(
+          children: activeAlerts,
+        );
+      },
+    );
+  }
+
+  // Helper Widget for the Alert Card
+  Widget _buildAlertCard({
+    required BuildContext context,
+    required String category,
+    required String message,
+    required String subMessage,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6), // Vertical spacing between alerts
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Row(
+        children: [
+          // Icon Box
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 12),
+
+          // Text Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                Text(
+                  subMessage,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+
+          // Close Button
+          IconButton(
+            icon: const Icon(Icons.close, size: 20, color: Colors.grey),
+            onPressed: () {
+              setState(() {
+                _dismissedWarnings.add(category);
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
   @override
   void initState() {
     super.initState();
@@ -165,17 +292,17 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           Image.asset(
             'assets/images/aichatbot.gif',
-            width: 28,
-            height: 28,
+            width: 58,
+            height: 58,
           ),
-          const SizedBox(width: 6),
-          const Text(
-            "AI Chatbot",
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          // const SizedBox(width: 6),
+          // const Text(
+          //   "AI Chatbot",
+          //   style: TextStyle(
+          //     fontSize: 14,
+          //     fontWeight: FontWeight.w600,
+          //   ),
+          // ),
           const SizedBox(width: 8),
         ],
       ),
@@ -235,7 +362,11 @@ class _MainScreenState extends State<MainScreen> {
 
           return CustomScrollView(
             slivers: [
+              SliverToBoxAdapter(
+                child: _buildBudgetWarning(allExpenses),
+              ),
               // DASHBOARD
+
               SliverToBoxAdapter(
                 child: DashboardCard(
                   viewModel: _viewModel,

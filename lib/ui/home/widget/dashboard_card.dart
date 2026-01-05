@@ -611,7 +611,7 @@ class _DashboardCardState extends State<DashboardCard> {
                               },
                             ),
                             borderData: FlBorderData(show: false),
-                            sectionsSpace: 4, 
+                            sectionsSpace: 2, 
                             centerSpaceRadius: 40, // Donut hole size
                             sections: _buildAnimatedChartSections(context, sortedEntries), 
                           ),

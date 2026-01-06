@@ -1,7 +1,7 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
 import 'package:bill_buddy/data/notification/notification_service.dart';
-import 'package:bill_buddy/ui/budget/budget_screen.dart';
+import 'package:bill_buddy/ui/budget/screen/budget_screen.dart';
 import 'package:bill_buddy/ui/login/login_screen.dart';
 import 'package:bill_buddy/ui/settings/screen/edit_profile_screen.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';

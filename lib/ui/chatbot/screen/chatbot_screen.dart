@@ -34,7 +34,8 @@
 
 import 'package:bill_buddy/ui/chatbot/service/chat_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart'; // Optional: for nicer text
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:lottie/lottie.dart'; // Optional: for nicer text
 
 
 class ChatbotScreen extends StatefulWidget {
@@ -105,14 +106,27 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       backgroundColor: chatBgColor,
       appBar: AppBar(
+        leadingWidth: 56, // 🔥 reduce back-arrow space (default ~56)
+  titleSpacing: 0,  
         title: Row(
           children: [
-             Image.asset(
-            'assets/images/aichatbot.gif',
-            width: 38,
-            height: 38,
+          
+           Lottie.asset(
+          'assets/lottie/chatbot.json',
+          width: 28,
+          height: 38,
+          delegates: LottieDelegates(
+            values: [
+              ValueDelegate.color(
+                const ['**'], // apply to all layers
+                value: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF80CBC4) // light teal (dark mode)
+                    : const Color(0xFF00695C), // deep teal (light mode)
+              ),
+            ],
           ),
-            SizedBox(width: 2),
+        ),
+            SizedBox(width: 8),
             Text("AI Assistant"),
           ],
         ),

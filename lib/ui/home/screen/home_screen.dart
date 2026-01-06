@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:bill_buddy/ui/expense_detail/expense_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 // Internal App Imports
@@ -191,17 +192,31 @@ class _MainScreenState extends State<MainScreen> {
       resizeToAvoidBottomInset: false, // Keeps FAB behind keyboard
       body: pages[_currentIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryColor,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.qr_code_scanner, color: Colors.white),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-          );
-        },
-      ),
+    floatingActionButton: FloatingActionButton(
+  backgroundColor: primaryColor,
+  shape: const CircleBorder(),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+    );
+  },
+  child: Lottie.asset(
+    'assets/lottie/Scanner_Animation.json', // your lottie file
+    width: 56,
+    height: 56,
+    delegates: LottieDelegates(
+      values: [
+        // ValueDelegate.color(
+        //   const ['**'], // apply to all layers
+        //   value: Theme.of(context).brightness == Brightness.dark
+        //       ? const Color(0xFF80CBC4) // light teal (dark mode)
+        //       : const Color(0xFF00695C), // deep teal (light mode)
+        // ),
+      ],
+    ),
+  ),
+),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
@@ -277,37 +292,43 @@ class _MainScreenState extends State<MainScreen> {
               ),
         
           actions: [
-  Padding(
-    padding: const EdgeInsets.only(right: 8),
-    child: InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-        );
-      },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            'assets/images/aichatbot.gif',
-            width: 58,
-            height: 58,
+
+Padding(
+  padding: const EdgeInsets.only(right: 8),
+  child: InkWell(
+    borderRadius: BorderRadius.circular(20),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ChatbotScreen()),
+      );
+    },
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Lottie.asset(
+          'assets/lottie/chatbot.json',
+          width: 38,
+          height: 48,
+          delegates: LottieDelegates(
+            values: [
+              ValueDelegate.color(
+                const ['**'], // apply to all layers
+                value: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF80CBC4) // light teal (dark mode)
+                    : const Color(0xFF00695C), // deep teal (light mode)
+              ),
+            ],
           ),
-          // const SizedBox(width: 6),
-          // const Text(
-          //   "AI Chatbot",
-          //   style: TextStyle(
-          //     fontSize: 14,
-          //     fontWeight: FontWeight.w600,
-          //   ),
-          // ),
-          const SizedBox(width: 8),
-        ],
-      ),
+        ),
+         const SizedBox(width: 10),
+      ],
+      
     ),
+    
   ),
+ 
+)
 ],
 
         
@@ -404,7 +425,7 @@ class _MainScreenState extends State<MainScreen> {
                         child: Row(
                           children: [
                             _buildListMonthFilter(context),
-                            const SizedBox(width: 120), 
+                            const SizedBox(width: 90), 
                             _buildCategoryFilter(context),
                           ],
                         ),

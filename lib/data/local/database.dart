@@ -211,11 +211,11 @@ class UserProfiles extends Table {
   Set<Column> get primaryKey => {uid};
 }
 
-// ✅ NEW TABLE: BUDGETS
+
 class Budgets extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get category => text().unique()(); // One budget per category
-  RealColumn get limit => real()(); // The max amount (e.g., 5000)
+  TextColumn get category => text().unique()(); 
+  RealColumn get limit => real()(); 
 }
 
 // ==========================================
@@ -228,18 +228,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7; // ✅ INCREMENTED VERSION
+  int get schemaVersion => 7; 
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    // 1. ON CREATE: Run this when the app is installed for the first time
+    
     onCreate: (Migrator m) async {
       await m.createAll(); 
       
-      // INSERT DEFAULT TAGS
+     
       await batch((batch) {
         batch.insertAll(tags, [
-          // Basic Needs
+          
           TagsCompanion.insert(name: "General", color: const Value(0xFF9E9E9E), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Food", color: const Value(0xFFFF5722), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Grocery", color: const Value(0xFF4CAF50), isCustom: const Value(false)),
@@ -247,14 +247,14 @@ class AppDatabase extends _$AppDatabase {
           TagsCompanion.insert(name: "Rent", color: const Value(0xFF795548), isCustom: const Value(false)),
           TagsCompanion.insert(name: "House", color: const Value(0xFF8D6E63), isCustom: const Value(false)), 
           
-          // Lifestyle
+         
           TagsCompanion.insert(name: "Shopping", color: const Value(0xFFE91E63), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Entertainment", color: const Value(0xFF9C27B0), isCustom: const Value(false)), 
           TagsCompanion.insert(name: "Travel", color: const Value(0xFFFF9800), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Gym", color: const Value(0xFF3F51B5), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Pets", color: const Value(0xFF795548), isCustom: const Value(false)), 
           
-          // Bills & Work
+       
           TagsCompanion.insert(name: "Electric Bill", color: const Value(0xFFFFC107), isCustom: const Value(false)), 
           TagsCompanion.insert(name: "Electronics", color: const Value(0xFF607D8B), isCustom: const Value(false)), 
           TagsCompanion.insert(name: "Education", color: const Value(0xFFFFC107), isCustom: const Value(false)),
@@ -262,20 +262,20 @@ class AppDatabase extends _$AppDatabase {
           TagsCompanion.insert(name: "Office", color: const Value(0xFF607D8B), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Investment", color: const Value(0xFF4CAF50), isCustom: const Value(false)),
           
-          // Income/People
+         
           TagsCompanion.insert(name: "Salary", color: const Value(0xFF009688), isCustom: const Value(false)),
           TagsCompanion.insert(name: "Personal", color: const Value(0xFF3F51B5), isCustom: const Value(false)), 
         ]);
       });
     },
 
-    // 2. ON UPGRADE: Run this when schemaVersion changes
+    
 onUpgrade: (Migrator m, int from, int to) async {
       if (from < 6) {
         await m.createTable(budgets);
       }
       if (from < 7) {
-        // Add the emoji column to the existing Tags table
+       
         await m.addColumn(tags, tags.emoji);
       }
     },
@@ -307,13 +307,13 @@ onUpgrade: (Migrator m, int from, int to) async {
 
   Stream<List<Expense>> watchAllExpenses() => watchExpenses();
 
-  // Get Total Spend (Lifetime)
+
   Future<double> getTotalSpend() async {
     final result = await (select(expenses)).get();
     return result.fold<double>(0.0, (sum, item) => sum + item.amount);
   }
 
-  // ✅ UPDATED: Deletes Items first, then the Expense (Safe Delete)
+ 
   Future<void> deleteExpense(int id) {
     return transaction(() async {
       await (delete(expenseItems)..where((t) => t.expenseId.equals(id))).go();
@@ -323,7 +323,7 @@ onUpgrade: (Migrator m, int from, int to) async {
   
   Future<int> insertExpense(ExpensesCompanion entry) => into(expenses).insert(entry);
   
-  // Get Items for Detail Screen
+
   Future<List<ExpenseItem>> getExpenseItems(int expenseId) {
     return (select(expenseItems)..where((tbl) => tbl.expenseId.equals(expenseId))).get();
   }
@@ -343,30 +343,30 @@ onUpgrade: (Migrator m, int from, int to) async {
   // 4. BUDGET QUERIES (NEW)
   // ==========================================
   
-  // Set or Update a Budget
+ 
 Future<void> setBudget(String category, double limit) async {
-    // 1. Check if budget exists for this category
+    
     final existing = await (select(budgets)..where((t) => t.category.equals(category))).getSingleOrNull();
     
     if (existing != null) {
-      // 2. UPDATE if exists
+   
       await (update(budgets)..where((t) => t.category.equals(category))).write(
         BudgetsCompanion(limit: Value(limit)),
       );
     } else {
-      // 3. INSERT if new
+ 
       await into(budgets).insert(
         BudgetsCompanion(category: Value(category), limit: Value(limit)),
       );
     }
   }
 
-  // Watch all budgets
+  
   Stream<List<Budget>> watchAllBudgets() {
     return select(budgets).watch();
   }
 
-  // Delete a budget
+
   Future<void> deleteBudget(String category) {
     return (delete(budgets)..where((t) => t.category.equals(category))).go();
   }

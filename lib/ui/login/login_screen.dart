@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -64,8 +65,7 @@ void _handleGoogleLogin() async {
       }
     }
   }
-
-  void _handleEmailLogin() async {
+void _handleEmailLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       _showError("Please enter email and password");
       return;
@@ -75,22 +75,44 @@ void _handleGoogleLogin() async {
     try {
       final auth = Provider.of<AuthService>(context, listen: false);
       
-      // ✅ 3. Capture the user object
+      print("🔵 Attempting Login for: ${_emailController.text.trim()}");
+
+      // 3. Attempt Sign In
       final user = await auth.signInWithEmail(
         _emailController.text.trim(), 
         _passwordController.text.trim()
       );
 
-      // ✅ 4. If success, Navigate to Dashboard
+      // 4. Navigate if successful
       if (user != null && mounted) {
+        print("✅ Login Success: ${user.uid}");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       }
+    } on FirebaseAuthException catch (e) {
+      // ✅ CATCH SPECIFIC FIREBASE ERRORS HERE
+      print("❌ Firebase Auth Error Code: ${e.code}");
+      print("❌ Firebase Auth Message: ${e.message}");
 
+      String msg = "Login failed";
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        msg = "User not found or wrong password.";
+      } else if (e.code == 'wrong-password') {
+        msg = "Incorrect password.";
+      } else if (e.code == 'invalid-email') {
+        msg = "Email address is invalid.";
+      } else if (e.code == 'user-disabled') {
+        msg = "This account has been disabled.";
+      } else {
+        msg = "Error: ${e.message}";
+      }
+      
+      if (mounted) _showError(msg);
     } catch (e) {
-      if (mounted) _showError(e.toString());
+      print("❌ General Error: $e");
+      if (mounted) _showError("An unexpected error occurred.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

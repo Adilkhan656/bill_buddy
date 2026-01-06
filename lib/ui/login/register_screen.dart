@@ -26,8 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // ---------------------------------------------------
   // LOGIC SECTION
   // ---------------------------------------------------
-
-  void _handleRegister() async {
+void _handleRegister() async {
     // 1. Basic Validation
     if (_nameController.text.isEmpty || 
         _emailController.text.isEmpty || 
@@ -56,23 +55,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (user != null) {
-        // 4. Save User Profile to Local Database
-        await database.saveUserProfile(
-          UserProfilesCompanion(
-            uid: drift.Value(user.uid),
-            name: drift.Value(_nameController.text.trim()),
-            email: drift.Value(_emailController.text.trim()),
-            age: drift.Value(int.tryParse(_ageController.text.trim()) ?? 0),
-          )
-        );
+        print("✅ Firebase User Created: ${user.uid}"); // Debug Log
+
+        // 4. Save User Profile to Local Database (With Try-Catch for DB specifically)
+        try {
+          // ✅ FIX: Use 'insertOnConflictUpdate' if available in your DAOs, 
+          // or generic insert. If it fails, we catch it.
+          await database.saveUserProfile(
+            UserProfilesCompanion(
+              uid: drift.Value(user.uid),
+              name: drift.Value(_nameController.text.trim()),
+              email: drift.Value(_emailController.text.trim()),
+              age: drift.Value(int.tryParse(_ageController.text.trim()) ?? 0),
+            )
+          );
+          print("✅ Local Database Saved Successfully");
+        } catch (dbError) {
+          print("⚠️ Database Save Warning: User might already exist locally. Error: $dbError");
+          // We don't stop the app here; if Firebase is done, we let them in.
+        }
 
         if (mounted) {
-          // Success! Go back to login or let AuthWrapper handle it
           Navigator.pop(context); 
         }
       }
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase specific errors (like 'email-already-in-use')
+      String msg = "Registration failed";
+      if (e.code == 'email-already-in-use') {
+        msg = "This email is already registered.";
+      } else if (e.code == 'weak-password') {
+        msg = "Password is too weak.";
+      }
+      if (mounted) _showError(msg);
     } catch (e) {
-      if (mounted) _showError(e.toString());
+      // Handle generic errors
+      print("❌ CRITICAL ERROR: $e");
+      if (mounted) _showError("An unexpected error occurred: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

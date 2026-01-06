@@ -266,7 +266,7 @@ class _MainScreenState extends State<MainScreen> {
                 builder: (_, snap) {
                   final name = snap.data?.name ?? user.displayName ?? "User";
                   return Text(
-                    "Hi, ${name.split(" ").first} 👋",
+                    "Hello, ${name.split(" ").first} 👋",
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

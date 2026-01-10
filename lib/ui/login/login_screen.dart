@@ -1,3 +1,4 @@
+import 'package:bill_buddy/util/toast_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -119,13 +120,14 @@ void _handleEmailLogin() async {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(message),
+    //     backgroundColor: Colors.redAccent,
+    //     behavior: SnackBarBehavior.floating,
+    //   ),
+    // );
+    ToastHelper.show(context,message, isError: true);
   }
 
   // ---------------------------------------------------

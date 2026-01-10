@@ -1,3 +1,4 @@
+import 'package:bill_buddy/util/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
@@ -65,13 +66,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile Updated Successfully!"), backgroundColor: Colors.green),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text("Profile Updated Successfully!"), backgroundColor: Colors.green),
+        // );
+        ToastHelper.show(context,"Profile Updated Successfully");
         Navigator.pop(context, true);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ToastHelper.show(context,"Error: $e", isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

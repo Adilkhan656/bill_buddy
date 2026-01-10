@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:bill_buddy/data/service/pdf_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -24,11 +25,38 @@ class ExpenseDetailScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           // 1. MODERN APP BAR WITH IMAGE BACKGROUND
+          // SliverAppBar(
+          //   expandedHeight: expense.imagePath != null ? 300 : 120,
+          //   pinned: true,
+          //   backgroundColor: cardColor,
+          //   elevation: 0,
+          //   leading: IconButton(
+          //     icon: Container(
+          //       padding: const EdgeInsets.all(8),
+          //       decoration: BoxDecoration(color: cardColor, shape: BoxShape.circle),
+          //       child: Icon(Icons.arrow_back, color: textColor, size: 20),
+          //     ),
+          //     onPressed: () => Navigator.pop(context),
+          //   ),
+          //   flexibleSpace: FlexibleSpaceBar(
+          //     background: expense.imagePath != null
+          //         ? Image.file(File(expense.imagePath!), fit: BoxFit.cover)
+          //         : Container(
+          //             color: cardColor,
+          //             alignment: Alignment.bottomLeft,
+          //             padding: const EdgeInsets.only(left: 20, bottom: 20),
+          //             child: Text("Details", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: textColor)),
+          //           ),
+          //   ),
+          // ),
+// 1. MODERN APP BAR WITH IMAGE BACKGROUND
           SliverAppBar(
             expandedHeight: expense.imagePath != null ? 300 : 120,
             pinned: true,
             backgroundColor: cardColor,
             elevation: 0,
+            
+            // Back Button
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
@@ -37,6 +65,25 @@ class ExpenseDetailScreen extends StatelessWidget {
               ),
               onPressed: () => Navigator.pop(context),
             ),
+
+            // ✅ NEW: Export Button
+            actions: [
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: cardColor, shape: BoxShape.circle),
+                  child: Icon(Icons.print_rounded, color: textColor, size: 20),
+                ),
+                tooltip: "Export Receipt",
+                onPressed: () async {
+                  final currency = Provider.of<SettingsViewModel>(context, listen: false).currencySymbol;
+                   // Make sure to import your PdfService
+                   await PdfService().generateReceipt(expense,currency);
+                },
+              ),
+              const SizedBox(width: 10), // Right padding
+            ],
+
             flexibleSpace: FlexibleSpaceBar(
               background: expense.imagePath != null
                   ? Image.file(File(expense.imagePath!), fit: BoxFit.cover)
@@ -48,7 +95,6 @@ class ExpenseDetailScreen extends StatelessWidget {
                     ),
             ),
           ),
-
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20.0),

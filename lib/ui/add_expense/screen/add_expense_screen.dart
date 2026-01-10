@@ -1,5 +1,5 @@
 import 'package:bill_buddy/data/local/database.dart';
-import 'package:bill_buddy/data/notification/notification_service.dart';
+import 'package:bill_buddy/data/service/notification_service.dart';
 import 'package:bill_buddy/ui/add_expense/view_model/add_expanse_view_model.dart';
 import 'package:bill_buddy/ui/add_expense/widget/expense_widget.dart'; // Import the new widgets
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';

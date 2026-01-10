@@ -1,11 +1,13 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
-import 'package:bill_buddy/data/notification/notification_service.dart';
+import 'package:bill_buddy/data/service/notification_service.dart';
+import 'package:bill_buddy/data/service/pdf_service.dart';
 import 'package:bill_buddy/ui/budget/screen/budget_screen.dart';
 import 'package:bill_buddy/ui/login/login_screen.dart';
 import 'package:bill_buddy/ui/settings/screen/edit_profile_screen.dart';
 import 'package:bill_buddy/ui/settings/view_model/setting_view_model.dart';
 import 'package:bill_buddy/util/category_style_helper.dart';
+import 'package:bill_buddy/util/toast_helper.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -92,16 +94,41 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _showTagsDialog(context),
           ),
           const Divider(),
+          ListTile(
+  leading: const Icon(Icons.picture_as_pdf_rounded, color: Colors.black),
+  title: const Text("Export Lifetime Data"),
+  subtitle: const Text("Download all expenses as PDF report"),
+  onTap: () async {
+    final currency = Provider.of<SettingsViewModel>(context, listen: false).currencySymbol;
+    // 1. Show Loading Indicator (Optional)
+    // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Generating PDF...")));
+    ToastHelper.show(context, "Generating PDF...");
+    
+    // 2. Fetch All Data
+    final allExpenses = await database.watchAllExpenses().first;
+    
+    // 3. Generate PDF
+    if (allExpenses.isNotEmpty) {
+      await PdfService().generateLifetimeReport(allExpenses, currency); // Replace "User" with actual name if available
+    } else {
+      //  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No expenses to export!")));
+      ToastHelper.show(context, "No expenses to export!");
+    }
+  },
+),
+ const Divider(),
 
           // 6. HELP
          const _SectionHeader(title: "Help Center"),
           ListTile(
             leading: const Icon(Icons.star_rate),
             title: const Text("Rate Us"),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Thanks for 5 stars! ⭐")),
+            // onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+            //   const SnackBar(content: Text("Thanks for 5 stars! ⭐")),
+            onTap: () => ToastHelper.show(context,"Thanks for 5 stars! ⭐"),
             ),
-          ),
+
+          
           ListTile(
             leading: const Icon(Icons.email),
             title: const Text("Contact Us"),
@@ -109,20 +136,20 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _launchEmail(),
           ),
           const Divider(),
-ListTile(
-            leading: const Icon(Icons.notifications_active, color: Colors.orange),
-            title: const Text("Test Morning Notification"),
-            subtitle: const Text("Shows in 5 seconds (Close app to test)"),
-            onTap: () async {
-              // 1. Trigger the test
-              await NotificationService().testNotification();
+// ListTile(
+//             leading: const Icon(Icons.notifications_active, color: Colors.orange),
+//             title: const Text("Test Morning Notification"),
+//             subtitle: const Text("Shows in 5 seconds (Close app to test)"),
+//             onTap: () async {
+//               // 1. Trigger the test
+//               await NotificationService().testNotification();
               
-              // 2. Show a toast/snackbar
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Wait 5 seconds... (Try locking screen)")),
-              );
-            },
-          ),
+//               // 2. Show a toast/snackbar
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 const SnackBar(content: Text("Wait 5 seconds... (Try locking screen)")),
+//               );
+//             },
+//           ),
           // 7. LOGOUT
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.redAccent),

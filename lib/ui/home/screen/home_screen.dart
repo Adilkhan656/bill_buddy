@@ -191,32 +191,50 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false, // Keeps FAB behind keyboard
       body: pages[_currentIndex],
+      
+//       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+//     floatingActionButton: FloatingActionButton(
+//   backgroundColor: primaryColor,
+//   shape: const CircleBorder(),
+//   onPressed: () {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+//     );
+//   },
+//   child: Lottie.asset(
+//     'assets/lottie/Scanner_Animation.json', // your lottie file
+//     width: 56,
+//     height: 56,
+//     delegates: LottieDelegates(
+//       values: [
+//         // ValueDelegate.color(
+//         //   const ['**'], // apply to all layers
+//         //   value: Theme.of(context).brightness == Brightness.dark
+//         //       ? const Color(0xFF80CBC4) // light teal (dark mode)
+//         //       : const Color(0xFF00695C), // deep teal (light mode)
+//         // ),
+//       ],
+//     ),
+//   ),
+// ),
+// ✅ 1. Keep FAB Locked (Standard Docked Location)
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    floatingActionButton: FloatingActionButton(
-  backgroundColor: primaryColor,
-  shape: const CircleBorder(),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-    );
-  },
-  child: Lottie.asset(
-    'assets/lottie/Scanner_Animation.json', // your lottie file
-    width: 56,
-    height: 56,
-    delegates: LottieDelegates(
-      values: [
-        // ValueDelegate.color(
-        //   const ['**'], // apply to all layers
-        //   value: Theme.of(context).brightness == Brightness.dark
-        //       ? const Color(0xFF80CBC4) // light teal (dark mode)
-        //       : const Color(0xFF00695C), // deep teal (light mode)
-        // ),
-      ],
-    ),
-  ),
-),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryColor,
+        shape: const CircleBorder(),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+          );
+        },
+        child: Lottie.asset(
+          'assets/lottie/Scanner_Animation.json',
+          width: 56,
+          height: 56,
+        ),
+      ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
@@ -226,9 +244,7 @@ class _MainScreenState extends State<MainScreen> {
             IconButton(
               style: ButtonStyle(
                 foregroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (_currentIndex == 0) {
-                    return Theme.of(context).colorScheme.primary; 
-                  }
+                  if (_currentIndex == 0) return Theme.of(context).colorScheme.primary; 
                   return Colors.grey;
                 }),
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -240,9 +256,7 @@ class _MainScreenState extends State<MainScreen> {
             IconButton(
               style: ButtonStyle(
                 foregroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (_currentIndex == 1) {
-                    return Theme.of(context).colorScheme.primary;
-                  }
+                  if (_currentIndex == 1) return Theme.of(context).colorScheme.primary;
                   return Colors.grey;
                 }),
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -399,13 +413,49 @@ Padding(
               ),
 
               // SEARCH & FILTERS HEADER
-              SliverToBoxAdapter(
+              // SliverToBoxAdapter(
+              //   child: Padding(
+              //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         // ANIMATED SEARCH HEADER
+              //         AnimatedCrossFade(
+              //           firstChild: _buildTitleRow(context),
+              //           secondChild: _buildSearchBar(context),
+              //           crossFadeState: _isSearching 
+              //               ? CrossFadeState.showSecond 
+              //               : CrossFadeState.showFirst,
+              //           duration: const Duration(milliseconds: 300),
+              //           firstCurve: Curves.easeOut,
+              //           secondCurve: Curves.easeIn,
+              //         ),
+                      
+              //         const SizedBox(height: 10),
+                      
+              //         // FILTERS
+              //         SingleChildScrollView(
+              //           scrollDirection: Axis.horizontal,
+              //           child: Row(
+              //             children: [
+              //               _buildListMonthFilter(context),
+              //               const SizedBox(width: 90), 
+              //               _buildCategoryFilter(context),
+              //             ],
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
+SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ANIMATED SEARCH HEADER
+                      // SEARCH HEADER
                       AnimatedCrossFade(
                         firstChild: _buildTitleRow(context),
                         secondChild: _buildSearchBar(context),
@@ -417,24 +467,22 @@ Padding(
                         secondCurve: Curves.easeIn,
                       ),
                       
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
                       
-                      // FILTERS
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildListMonthFilter(context),
-                            const SizedBox(width: 90), 
-                            _buildCategoryFilter(context),
-                          ],
-                        ),
+                      // ✅ FIXED FILTERS ROW (No Scroll, cleaner layout)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Pushes them to edges
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildListMonthFilter(context)), // Takes 50% width
+                          const SizedBox(width: 16), // Gap
+                          Expanded(child: _buildCategoryFilter(context)), // Takes 50% width
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
-
               // TRANSACTIONS LIST
               listExpenses.isEmpty
                   ? SliverToBoxAdapter(

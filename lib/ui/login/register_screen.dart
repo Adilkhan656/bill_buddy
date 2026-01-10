@@ -1,3 +1,4 @@
+import 'package:bill_buddy/util/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -98,13 +99,14 @@ void _handleRegister() async {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(message),
+    //     backgroundColor: Colors.redAccent,
+    //     behavior: SnackBarBehavior.floating,
+    //   ),
+    // );
+    ToastHelper.show(context,message, isError: true);
   }
 
   // ---------------------------------------------------

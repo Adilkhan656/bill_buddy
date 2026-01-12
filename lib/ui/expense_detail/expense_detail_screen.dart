@@ -78,7 +78,7 @@ class ExpenseDetailScreen extends StatelessWidget {
                 onPressed: () async {
                   final currency = Provider.of<SettingsViewModel>(context, listen: false).currencySymbol;
                    // Make sure to import your PdfService
-                   await PdfService().generateReceipt(expense,currency);
+                   await PdfService().generateReceipt(expense: expense, currencySymbol: currency);
                 },
               ),
               const SizedBox(width: 10), // Right padding

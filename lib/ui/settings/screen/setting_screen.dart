@@ -1,6 +1,5 @@
 import 'package:bill_buddy/data/auth/auth_service.dart';
 import 'package:bill_buddy/data/local/database.dart';
-import 'package:bill_buddy/data/service/notification_service.dart';
 import 'package:bill_buddy/data/service/pdf_service.dart';
 import 'package:bill_buddy/ui/budget/screen/budget_screen.dart';
 import 'package:bill_buddy/ui/login/login_screen.dart';
@@ -83,7 +82,29 @@ class SettingsScreen extends StatelessWidget {
                // Navigate to Budget Screen
                Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
             },
+            
           ),
+          ListTile(
+  leading: const Icon(Icons.picture_as_pdf_rounded, color: Colors.black),
+  title: const Text("Export Lifetime Data"),
+  subtitle: const Text("Download all expenses as PDF report"),
+  onTap: () async {
+    final currency = Provider.of<SettingsViewModel>(context, listen: false).currencySymbol;
+    
+    ToastHelper.show(context, "Generating PDF...");
+    
+  
+    final allExpenses = await database.watchAllExpenses().first;
+    
+ 
+    if (allExpenses.isNotEmpty) {
+      await PdfService().generateLifetimeReport(allExpenses, currency); 
+    } else {
+      
+      ToastHelper.show(context, "No expenses to export!");
+    }
+  },
+),
  const Divider(),
           // 5. TAGS
           const _SectionHeader(title: "Tags & Categories"),
@@ -93,29 +114,29 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => _showTagsDialog(context),
           ),
-          const Divider(),
-          ListTile(
-  leading: const Icon(Icons.picture_as_pdf_rounded, color: Colors.black),
-  title: const Text("Export Lifetime Data"),
-  subtitle: const Text("Download all expenses as PDF report"),
-  onTap: () async {
-    final currency = Provider.of<SettingsViewModel>(context, listen: false).currencySymbol;
-    // 1. Show Loading Indicator (Optional)
-    // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Generating PDF...")));
-    ToastHelper.show(context, "Generating PDF...");
+          // const Divider(),
+//           const _SectionHeader(title: "Export Data"),
+//           ListTile(
+//   leading: const Icon(Icons.picture_as_pdf_rounded, color: Colors.black),
+//   title: const Text("Export Lifetime Data"),
+//   subtitle: const Text("Download all expenses as PDF report"),
+//   onTap: () async {
+//     final currency = Provider.of<SettingsViewModel>(context, listen: false).currencySymbol;
     
-    // 2. Fetch All Data
-    final allExpenses = await database.watchAllExpenses().first;
+//     ToastHelper.show(context, "Generating PDF...");
     
-    // 3. Generate PDF
-    if (allExpenses.isNotEmpty) {
-      await PdfService().generateLifetimeReport(allExpenses, currency); // Replace "User" with actual name if available
-    } else {
-      //  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No expenses to export!")));
-      ToastHelper.show(context, "No expenses to export!");
-    }
-  },
-),
+  
+//     final allExpenses = await database.watchAllExpenses().first;
+    
+ 
+//     if (allExpenses.isNotEmpty) {
+//       await PdfService().generateLifetimeReport(allExpenses, currency); 
+//     } else {
+      
+//       ToastHelper.show(context, "No expenses to export!");
+//     }
+//   },
+// ),
  const Divider(),
 
           // 6. HELP

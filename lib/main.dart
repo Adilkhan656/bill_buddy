@@ -155,7 +155,7 @@ void main() async {
   try {
     final notificationService = NotificationService();
     await notificationService.init();
-    await notificationService.scheduleMorningMotivation();
+    await notificationService.scheduleDailyReminders().then((_) => print("📅 Reminders Scheduled"));
 
     print("🔵 1. Starting DotEnv...");
     await dotenv.load(fileName: ".env");
@@ -164,8 +164,7 @@ void main() async {
     await Firebase.initializeApp();
 
     notificationService
-        .scheduleMorningMotivation()
-        .then((_) => print("☀️ Motivation Scheduled"));
+       .scheduleDailyReminders().then((_) => print("📅 Reminders Scheduled"));
 
     print("🔵 3. Launching App UI...");
 

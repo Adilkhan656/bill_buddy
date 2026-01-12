@@ -207,6 +207,7 @@ class UserProfiles extends Table {
   TextColumn get name => text()();
   TextColumn get email => text()();
   IntColumn get age => integer()();
+  TextColumn get phone => text().nullable()();
   @override
   Set<Column> get primaryKey => {uid};
 }

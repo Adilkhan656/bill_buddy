@@ -827,8 +827,17 @@ class $UserProfilesTable extends UserProfiles
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
   @override
-  List<GeneratedColumn> get $columns => [uid, name, email, age];
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [uid, name, email, age, phone];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -873,6 +882,12 @@ class $UserProfilesTable extends UserProfiles
     } else if (isInserting) {
       context.missing(_ageMeta);
     }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
     return context;
   }
 
@@ -898,6 +913,10 @@ class $UserProfilesTable extends UserProfiles
         DriftSqlType.int,
         data['${effectivePrefix}age'],
       )!,
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
     );
   }
 
@@ -912,11 +931,13 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   final String name;
   final String email;
   final int age;
+  final String? phone;
   const UserProfile({
     required this.uid,
     required this.name,
     required this.email,
     required this.age,
+    this.phone,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -925,6 +946,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     map['name'] = Variable<String>(name);
     map['email'] = Variable<String>(email);
     map['age'] = Variable<int>(age);
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
     return map;
   }
 
@@ -934,6 +958,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       name: Value(name),
       email: Value(email),
       age: Value(age),
+      phone: phone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phone),
     );
   }
 
@@ -947,6 +974,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       name: serializer.fromJson<String>(json['name']),
       email: serializer.fromJson<String>(json['email']),
       age: serializer.fromJson<int>(json['age']),
+      phone: serializer.fromJson<String?>(json['phone']),
     );
   }
   @override
@@ -957,22 +985,30 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       'name': serializer.toJson<String>(name),
       'email': serializer.toJson<String>(email),
       'age': serializer.toJson<int>(age),
+      'phone': serializer.toJson<String?>(phone),
     };
   }
 
-  UserProfile copyWith({String? uid, String? name, String? email, int? age}) =>
-      UserProfile(
-        uid: uid ?? this.uid,
-        name: name ?? this.name,
-        email: email ?? this.email,
-        age: age ?? this.age,
-      );
+  UserProfile copyWith({
+    String? uid,
+    String? name,
+    String? email,
+    int? age,
+    Value<String?> phone = const Value.absent(),
+  }) => UserProfile(
+    uid: uid ?? this.uid,
+    name: name ?? this.name,
+    email: email ?? this.email,
+    age: age ?? this.age,
+    phone: phone.present ? phone.value : this.phone,
+  );
   UserProfile copyWithCompanion(UserProfilesCompanion data) {
     return UserProfile(
       uid: data.uid.present ? data.uid.value : this.uid,
       name: data.name.present ? data.name.value : this.name,
       email: data.email.present ? data.email.value : this.email,
       age: data.age.present ? data.age.value : this.age,
+      phone: data.phone.present ? data.phone.value : this.phone,
     );
   }
 
@@ -982,13 +1018,14 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           ..write('uid: $uid, ')
           ..write('name: $name, ')
           ..write('email: $email, ')
-          ..write('age: $age')
+          ..write('age: $age, ')
+          ..write('phone: $phone')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uid, name, email, age);
+  int get hashCode => Object.hash(uid, name, email, age, phone);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -996,7 +1033,8 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           other.uid == this.uid &&
           other.name == this.name &&
           other.email == this.email &&
-          other.age == this.age);
+          other.age == this.age &&
+          other.phone == this.phone);
 }
 
 class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
@@ -1004,12 +1042,14 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   final Value<String> name;
   final Value<String> email;
   final Value<int> age;
+  final Value<String?> phone;
   final Value<int> rowid;
   const UserProfilesCompanion({
     this.uid = const Value.absent(),
     this.name = const Value.absent(),
     this.email = const Value.absent(),
     this.age = const Value.absent(),
+    this.phone = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UserProfilesCompanion.insert({
@@ -1017,6 +1057,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     required String name,
     required String email,
     required int age,
+    this.phone = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : uid = Value(uid),
        name = Value(name),
@@ -1027,6 +1068,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     Expression<String>? name,
     Expression<String>? email,
     Expression<int>? age,
+    Expression<String>? phone,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1034,6 +1076,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
       if (name != null) 'name': name,
       if (email != null) 'email': email,
       if (age != null) 'age': age,
+      if (phone != null) 'phone': phone,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1043,6 +1086,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     Value<String>? name,
     Value<String>? email,
     Value<int>? age,
+    Value<String?>? phone,
     Value<int>? rowid,
   }) {
     return UserProfilesCompanion(
@@ -1050,6 +1094,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
       name: name ?? this.name,
       email: email ?? this.email,
       age: age ?? this.age,
+      phone: phone ?? this.phone,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1069,6 +1114,9 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     if (age.present) {
       map['age'] = Variable<int>(age.value);
     }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1082,6 +1130,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
           ..write('name: $name, ')
           ..write('email: $email, ')
           ..write('age: $age, ')
+          ..write('phone: $phone, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2315,6 +2364,7 @@ typedef $$UserProfilesTableCreateCompanionBuilder =
       required String name,
       required String email,
       required int age,
+      Value<String?> phone,
       Value<int> rowid,
     });
 typedef $$UserProfilesTableUpdateCompanionBuilder =
@@ -2323,6 +2373,7 @@ typedef $$UserProfilesTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> email,
       Value<int> age,
+      Value<String?> phone,
       Value<int> rowid,
     });
 
@@ -2352,6 +2403,11 @@ class $$UserProfilesTableFilterComposer
 
   ColumnFilters<int> get age => $composableBuilder(
     column: $table.age,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2384,6 +2440,11 @@ class $$UserProfilesTableOrderingComposer
     column: $table.age,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserProfilesTableAnnotationComposer
@@ -2406,6 +2467,9 @@ class $$UserProfilesTableAnnotationComposer
 
   GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
 }
 
 class $$UserProfilesTableTableManager
@@ -2443,12 +2507,14 @@ class $$UserProfilesTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> email = const Value.absent(),
                 Value<int> age = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserProfilesCompanion(
                 uid: uid,
                 name: name,
                 email: email,
                 age: age,
+                phone: phone,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2457,12 +2523,14 @@ class $$UserProfilesTableTableManager
                 required String name,
                 required String email,
                 required int age,
+                Value<String?> phone = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UserProfilesCompanion.insert(
                 uid: uid,
                 name: name,
                 email: email,
                 age: age,
+                phone: phone,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

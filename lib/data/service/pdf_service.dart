@@ -141,6 +141,9 @@ Future<void> generateReceipt({
   // ---------------------------------------------------------------------------
   // 📊 2. PREMIUM LIFETIME REPORT
   // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+  // 📊 2. PREMIUM LIFETIME REPORT (Fixed Chart Size)
+  // ---------------------------------------------------------------------------
   Future<void> generateLifetimeReport(List<Expense> expenses, String currencySymbol) async {
     final pdf = pw.Document();
     final font = await PdfGoogleFonts.robotoRegular();
@@ -148,6 +151,7 @@ Future<void> generateReceipt({
 
     final totalSpent = expenses.fold(0.0, (sum, item) => sum + item.amount);
     
+    // Process Data
     final Map<String, double> categoryData = {};
     for (var e in expenses) {
       categoryData[e.category] = (categoryData[e.category] ?? 0) + e.amount;
@@ -157,7 +161,8 @@ Future<void> generateReceipt({
       ..sort((a, b) => b.value.compareTo(a.value));
     
     final chartColors = [
-      PdfColors.teal, PdfColors.orange, PdfColors.purple, PdfColors.blue, PdfColors.red, PdfColors.green,
+      PdfColors.teal, PdfColors.orange, PdfColors.purple, PdfColors.blue, PdfColors.red, 
+      PdfColors.green, PdfColors.pink, PdfColors.amber, PdfColors.cyan, PdfColors.brown
     ];
 
     pdf.addPage(
@@ -166,7 +171,7 @@ Future<void> generateReceipt({
         theme: pw.ThemeData.withFont(base: font, bold: boldFont),
         build: (pw.Context context) {
           return [
-            // HEADER
+            // --- HEADER ---
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
@@ -192,60 +197,66 @@ Future<void> generateReceipt({
             pw.Divider(),
             pw.SizedBox(height: 20),
 
-            // CHART
+            // --- SPENDING BREAKDOWN ---
             pw.Text("Spending Breakdown", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 20),
 
-            pw.Row(
-              children: [
-                pw.Expanded(
-                  flex: 2,
-                  child: pw.Container(
-                    height: 150,
-                    child: pw.Chart(
-                      title: pw.Text("Expenses"),
-                      grid: pw.PieGrid(),
-                      datasets: List.generate(sortedCategories.length, (index) {
-                        final entry = sortedCategories[index];
-                        final color = chartColors[index % chartColors.length];
-                        return pw.PieDataSet(
-                          legend: entry.key,
-                          value: entry.value,
-                          color: color,
-                        );
-                      }),
-                    ),
-                  ),
-                ),
-                pw.SizedBox(width: 20),
-                
-                // LEGEND
-                pw.Expanded(
-                  flex: 1,
-                  child: pw.Column(
-                    children: List.generate(sortedCategories.take(6).length, (index) {
-                      final entry = sortedCategories[index];
-                      final color = chartColors[index % chartColors.length];
-                      return pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 5),
-                        child: pw.Row(
+            // ✅ BIG PIE CHART (Full Width)
+            pw.Container(
+              height: 250, // Increased height for better visibility
+              alignment: pw.Alignment.center,
+              child: pw.Chart(
+                title: pw.Text("Expenses"),
+                grid: pw.PieGrid(),
+                datasets: List.generate(sortedCategories.length, (index) {
+                  final entry = sortedCategories[index];
+                  final color = chartColors[index % chartColors.length];
+                  return pw.PieDataSet(
+                    legend: entry.key,
+                    value: entry.value,
+                    color: color,
+                    legendStyle: const pw.TextStyle(fontSize: 10),
+                  );
+                }),
+              ),
+            ),
+            
+            pw.SizedBox(height: 20),
+            
+            // ✅ LEGEND BELOW CHART (Wrap Layout to fit many items)
+            pw.Wrap(
+              spacing: 15,
+              runSpacing: 10,
+              children: List.generate(sortedCategories.length, (index) {
+                final entry = sortedCategories[index];
+                final color = chartColors[index % chartColors.length];
+                final percentage = (entry.value / totalSpent * 100).toStringAsFixed(1);
+
+                return pw.Container(
+                  width: 150, // Fixed width for alignment
+                  child: pw.Row(
+                    mainAxisSize: pw.MainAxisSize.min,
+                    children: [
+                      pw.Container(width: 10, height: 10, decoration: pw.BoxDecoration(color: color, shape: pw.BoxShape.circle)),
+                      pw.SizedBox(width: 5),
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Container(width: 8, height: 8, color: color),
-                            pw.SizedBox(width: 6),
-                            pw.Expanded(child: pw.Text(entry.key, style: const pw.TextStyle(fontSize: 10))),
-                            pw.Text("$currencySymbol${entry.value.toStringAsFixed(0)}", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                            pw.Text(entry.key, style: const pw.TextStyle(fontSize: 10), maxLines: 1, overflow: pw.TextOverflow.clip),
+                            pw.Text("$currencySymbol${entry.value.toStringAsFixed(0)} ($percentage%)", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: _grey)),
                           ],
                         ),
-                      );
-                    }),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                );
+              }),
             ),
             
             pw.SizedBox(height: 30),
 
-            // TABLE
+            // --- TRANSACTION TABLE ---
             pw.Text("Transaction History", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             
@@ -279,7 +290,7 @@ Future<void> generateReceipt({
       name: 'BillBuddy_Report.pdf',
     );
   }
-
+  
   // HELPERS
   pw.Widget _buildReceiptRow(String label, String value, {bool isBold = false}) {
     return pw.Padding(

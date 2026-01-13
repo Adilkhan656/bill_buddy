@@ -62,6 +62,7 @@ dependencies:
   flutter_markdown: ^0.7.1
   flutter_local_notifications: ^18.0.1
   timezone: ^0.10.0
+  cloud_firestore: ^5.6.12
 
 dev_dependencies:
   build_runner: ^2.4.7

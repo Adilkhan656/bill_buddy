@@ -1,5 +1,6 @@
 // android/app/build.gradle.kts
-
+import java.util.Properties
+import java.io.FileInputStream
 plugins {
     id("com.android.application")
     // Use the modern Kotlin plugin ID
@@ -9,7 +10,11 @@ plugins {
     // FIREBASE (Apply it here without version)
     id("com.google.gms.google-services") 
 }
-
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 android {
     namespace = "com.example.bill_buddy" // Your Package Name
     compileSdk = flutter.compileSdkVersion
@@ -34,10 +39,38 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+ signingConfigs {
+        create("release") {
+            // Load the key.properties file
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            val keystoreProperties = Properties()
+            
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+            }
 
+            // Assign values safely using getProperty()
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storePassword = keystoreProperties.getProperty("storePassword")
+            
+            // Fix the storeFile logic
+            val storeFileName = keystoreProperties.getProperty("storeFile")
+            if (storeFileName != null) {
+                storeFile = file(storeFileName)
+            }
+        }
+    }
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            // signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

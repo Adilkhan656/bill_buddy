@@ -1,13 +1,12 @@
-// android/app/build.gradle.kts
 import java.util.Properties
 import java.io.FileInputStream
 plugins {
     id("com.android.application")
-    // Use the modern Kotlin plugin ID
+   
     id("org.jetbrains.kotlin.android") 
-    // Flutter plugin
+   
     id("dev.flutter.flutter-gradle-plugin")
-    // FIREBASE (Apply it here without version)
+    
     id("com.google.gms.google-services") 
 }
 val keystoreProperties = Properties()
@@ -85,3 +84,4 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth") 
 }
+///adilrazakhan158@gmail.com
